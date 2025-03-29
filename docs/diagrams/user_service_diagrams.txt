@@ -1,0 +1,52 @@
+// Use Case Diagram
+[Customer]
+  ↳ Login
+  ↳ Register
+  ↳ Reset Password
+  ↳ Add to Cart
+  ↳ Create Order
+  ↳ Confirm Order
+  ↳ View Orders
+  ↳ Manage Addresses
+
+// Sequence Diagram - Password Reset Flow
+Customer → UserService: request_password_reset(username)
+UserService → JWTService: create_reset_token(username)
+JWTService → UserService: return token
+UserService → Customer: return reset token
+
+Customer → UserService: verify_reset_token_and_update_password(token, new_password)
+UserService → JWTService: verify_reset_token(token)
+JWTService → UserService: return username
+UserService → UserService: update password
+UserService → Customer: return success
+
+// Sequence Diagram - Order Creation
+Customer → UserService: create_order(username, order_data)
+UserService → Database: get_user(username)
+Database → UserService: return user
+UserService → DeliveryService: calculate_delivery_fee(address)
+DeliveryService → UserService: return fee and distance
+UserService → UserService: create order with delivery info
+UserService → Customer: return OrderResponse
+
+// Class Diagram
++------------------------+
+|       Customer        |
++------------------------+
+| - username: str       |
+| - password: str       |
+| - hash_password: str  |
+| - name: str          |
+| - default_address    |
+| - phone_number: str  |
+| - cart: List[Item]   |
+| - orders: List[Order]|
+| - saved_addresses    |
++------------------------+
+| + add_to_cart()      |
+| + create_order()     |
+| + confirm_order()    |
+| + clear_cart()       |
+| + add_saved_address()|
++------------------------+

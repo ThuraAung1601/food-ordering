@@ -1,0 +1,71 @@
+// Class Diagram with Associations
+
++------------------------+        +------------------------+
+|       Account          |        |       Address         |
++------------------------+        +------------------------+
+| - username: str       |        | - number: str         |
+| - password: str       |        | - street: str         |
+| - hash_password: str  |        | - city: str           |
++------------------------+        +------------------------+
+| + username()          |        | + __str__()           |
+| + hash_password()     |        | + __eq__()            |
++------------------------+        +------------------------+
+           ↑                                ↑
+           |                                |
+    +-------------+                         |
+    |      |      |                        |
++----------+--+ +-----------+    +-----------------+
+|   Admin     | | Customer   |----| default_address |
++-------------+ +-----------+    +-----------------+
+| - staff_id  | | - name    |    | - cart: List   |
+| - menus     | | - phone   |    | - orders: List |
++-------------+ +-----------+    | - saved_addresses|
+| + auth()    | | + add_to_cart()| 
+| + get_all   | | + clear_cart() |
+| + customers()| | + create_order()|
+| + get_orders()| + confirm_order()|
++-------------+ | + add_address() |
+                +-----------+
+                     |
+                     ↓
+              +-----------+
+              |   Order   |
+              +-----------+
+              | - items   |
+              | - address |
+              | - status  |
+              | - created_at|
+              | - total_price|
+              | - delivery_fee|
+              | - distance |
+              +-----------+
+                    ↑
+                    |
+          +-------------+
+          |    Item     |
+          +-------------+
+          | - name      |
+          | - price     |
+          | - description|
+          | - photo_url |
+          +-------------+
+                ↑
+                |
+          +-----+-----+
+          |     |     |
+    +-----+ +-----+ +-------+
+    |Main | |Side | |Drink  |
+    |Dish | |Dish | |      |
+    +-----+ +-----+ +-------+
+    |time | |veg  | |temp   |
+    +-----+ +-----+ +-------+
+
+// Relationships:
+- Admin "1" --- "*" Customer (manages)
+- Admin "1" --- "*" Order (manages)
+- Customer "1" --- "*" Order (places)
+- Customer "1" --- "*" Address (has)
+- Order "1" --- "*" Item (includes)
+- Order "1" --- "1" Address (delivers to)
+- Item <|-- MainDish, SideDish, Drink (inheritance)
+- Account <|-- Admin, Customer (inheritance)

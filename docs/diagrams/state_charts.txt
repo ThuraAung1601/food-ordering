@@ -1,0 +1,47 @@
+// State Charts
+
+// Order State Chart
+[*] --> PENDING
+PENDING --> PREPARING : confirm_order[items_available]/update_status
+PREPARING --> READY : food_ready[all_items_prepared]/update_status
+READY --> DELIVERED : delivery_complete[customer_received]/update_status
+PENDING --> CANCELLED : cancel[within_5_min]/refund
+PREPARING --> CANCELLED : cancel[admin_approved]/refund
+DELIVERED --> [*]
+CANCELLED --> [*]
+
+// Customer State Chart
+[*] --> GUEST
+GUEST --> REGISTERED : register[valid_info]/create_account
+REGISTERED --> AUTHENTICATED : login[valid_credentials]/create_session
+AUTHENTICATED --> SHOPPING : view_menu[menu_available]/load_items
+SHOPPING --> CHECKOUT : create_order[cart_not_empty]/calculate_total
+CHECKOUT --> ORDER_PLACED : confirm_order[valid_address]/create_order
+ORDER_PLACED --> AUTHENTICATED : order_complete/clear_cart
+AUTHENTICATED --> GUEST : logout/clear_session
+
+// Cart State Chart
+[*] --> EMPTY
+EMPTY --> HAS_ITEMS : add_item[item_available]/update_total
+HAS_ITEMS --> HAS_ITEMS : add_item[item_available]/update_total
+HAS_ITEMS --> HAS_ITEMS : remove_item[item_exists]/update_total
+HAS_ITEMS --> EMPTY : clear_cart/reset_total
+HAS_ITEMS --> EMPTY : checkout[order_confirmed]/create_order
+EMPTY --> [*]
+
+// Admin State Chart
+[*] --> UNAUTHENTICATED
+UNAUTHENTICATED --> AUTHENTICATED : login[valid_credentials]/create_session
+AUTHENTICATED --> MANAGING_ORDERS : view_orders/load_orders
+MANAGING_ORDERS --> MANAGING_ORDERS : update_status[valid_status]/notify_customer
+AUTHENTICATED --> MANAGING_CUSTOMERS : view_customers/load_customers
+MANAGING_CUSTOMERS --> MANAGING_CUSTOMERS : view_details[customer_exists]/load_details
+AUTHENTICATED --> UNAUTHENTICATED : logout/clear_session
+
+// Item State Chart
+[*] --> AVAILABLE
+AVAILABLE --> IN_CART : add_to_cart[stock_available]/decrease_stock
+IN_CART --> AVAILABLE : remove_from_cart/increase_stock
+IN_CART --> ORDERED : confirm_order[valid_order]/update_inventory
+AVAILABLE --> OUT_OF_STOCK : check_stock[stock_zero]/update_status
+OUT_OF_STOCK --> AVAILABLE : restock[stock_added]/update_status

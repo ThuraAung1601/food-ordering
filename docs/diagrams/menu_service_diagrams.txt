@@ -1,0 +1,56 @@
+// Use Case Diagram
+[User]
+  ↳ View Menu
+  ↳ View Menu Items
+  ↳ Filter Items by Type
+
+// Sequence Diagram - Menu Viewing (Base Flow)
+User → MenuService: get_menu_by_name(name)
+MenuService → Database: get_menu(name)
+Database → MenuService: return menu
+MenuService → User: return menu items
+
+// Sequence Diagram - Menu Viewing (Alternative Flow)
+User → MenuService: get_menu_items_by_type(menu_name, item_type)
+MenuService → Database: get_menu(menu_name)
+Database → MenuService: return menu
+MenuService → MenuService: filter items by type
+MenuService → User: return filtered items
+
+// Sequence Diagram - Menu Viewing (Alternative Flow 2)
+User → MenuService: get_menu_items_by_type(menu_name, "main")
+MenuService → Database: get_menu(menu_name)
+Database → MenuService: return menu
+MenuService → User: return only main dishes
+
+User → MenuService: get_menu_items_by_type(menu_name, "side")
+MenuService → Database: get_menu(menu_name)
+Database → MenuService: return menu
+MenuService → User: return only side dishes
+
+User → MenuService: get_menu_items_by_type(menu_name, "drink")
+MenuService → Database: get_menu(menu_name)
+Database → MenuService: return menu
+MenuService → User: return only drinks
+
+// Class Diagram
++------------------------+
+|         Menu          |
++------------------------+
+| - name: str          |
+| - items: List[Item]  |
++------------------------+
+| + add_item()         |
+| + remove_item()      |
+| + edit_item()        |
+| + total_price        |
++------------------------+
+
++------------------------+
+|         Item          |
++------------------------+
+| - name: str          |
+| - price: float       |
+| - description: str   |
+| - photo_url: str     |
++------------------------+

@@ -1,0 +1,47 @@
+// Use Case Diagram
+[Admin]
+  ↳ Login
+  ↳ Manage Customers
+  ↳ View Customer Details
+  ↳ Manage Orders
+  ↳ Update Order Status
+  ↳ Create Menu
+  ↳ Manage Menu Items
+  ↳ View Revenue
+
+// Sequence Diagram - Admin Authentication
+Admin → AdminService: authenticate_admin(username, password)
+AdminService → Database: get_admin(username)
+Database → AdminService: return admin
+AdminService → AdminService: verify password hash
+AdminService → Admin: return authenticated admin
+
+// Sequence Diagram - Customer Management
+Admin → AdminService: get_all_customers()
+AdminService → Database: get_customers()
+Database → AdminService: return customers
+AdminService → Admin: return CustomerResponse list
+
+// Sequence Diagram - Order Management
+Admin → AdminService: update_order_status(order_id, status)
+AdminService → Database: get_order(order_id)
+Database → AdminService: return order
+AdminService → AdminService: update status
+AdminService → Admin: return success
+
+// Class Diagram
++------------------------+
+|         Admin         |
++------------------------+
+| - username: str       |
+| - password: str       |
+| - hash_password: str  |
+| - staff_id: str      |
+| - menus: Dict[str]   |
++------------------------+
+| + authenticate()      |
+| + manage_customers()  |
+| + manage_orders()     |
+| + manage_menu()       |
+| + view_revenue()      |
++------------------------+
