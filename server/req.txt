@@ -1,0 +1,101 @@
+Software Requirement
+
+User Requirement
+Functional Requirement
+1. The system shall process user registration and authentication within 2 seconds, with a 99% success rate for valid credentials and proper error messages for invalid attempts.
+
+2. The system shall display all menu items with their details (name, price, description, photo) within 1 second of page load, supporting at least 100 concurrent menu item views.
+
+3. The system shall process cart operations (add, remove, update quantity) instantly with real-time total price calculation and maintain cart data persistence throughout the user session.
+
+4. The system shall complete order placement within 3 seconds, including delivery address validation, order confirmation generation, and notification to both customer and admin.
+
+5. The system shall update and display order status changes within 1 second, maintaining accurate tracking through all four states (pending, preparing, ready, delivered).
+
+6. The system shall support storage and retrieval of up to 5 delivery addresses per user, with instant address validation and default address setting functionality.
+
+7. The system shall display order history with detailed information within 2 seconds, maintaining records of at least 50 past orders per user.
+
+8. The system shall process table reservations within 2 seconds, with real-time availability updates and support for up to 20 concurrent table bookings.
+
+9. The system shall allow admins to perform menu management operations (add, edit, delete items) with changes reflected in the system within 1 second.
+
+10. The system shall provide admins with instant access to restaurant operation data, supporting simultaneous management of up to 100 active orders.
+
+Non-functional Requirement
+1. The FastAPI backend shall handle at least 1000 requests per minute with an average response time under 100ms.
+
+2. The ZODB database shall maintain data consistency with a maximum data loss window of 1 second during system failures.
+
+3. All code shall pass PEP 8 validation with zero critical style violations and maintain a minimum of 90% code coverage.
+
+4. The authentication system shall process login attempts within 1 second and maintain session security for 24 hours.
+
+5. The password hashing mechanism shall process passwords using SHA-256 with a maximum computation time of 100ms.
+
+6. The system shall handle errors with appropriate status codes and messages, maintaining a log of all system errors for 30 days.
+
+7. The modular architecture shall support independent scaling of services with zero downtime during updates.
+
+8. Input validation shall process all user inputs within 50ms with 100% validation coverage for security-critical fields.
+
+9. All API endpoints shall follow REST principles with a documented response time under 200ms for 95% of requests.
+
+10. Database transactions shall maintain ACID properties with a maximum of 1000 concurrent transactions per minute.
+
+System Requirement
+1. Data Models:
+
+1.1. USER object:
+    1.1.1. username (STRING): Unique identifier
+    1.1.2. password (STRING): Hashed password using SHA-256
+    1.1.3. name (STRING): User's name
+    1.1.4. address (ADDRESS): User's address
+    1.1.5. phone_number (STRING): Contact number
+    1.1.6. cart (LIST): List of items in cart
+    1.1.7. orders (LIST): List of orders
+    1.1.8. table (INTEGER): Assigned table number
+
+1.2. ADMIN object:
+    1.2.1. username (STRING): Unique identifier
+    1.2.2. password (STRING): Hashed password using SHA-256
+    1.2.3. staff_id (STRING): Staff identifier
+
+1.3. MENU object:
+    1.3.1. name (STRING): Menu name
+    1.3.2. items (LIST): List of food items
+
+1.4. ITEM objects:
+    1.4.1. Base Item:
+        - name (STRING): Item name
+        - price (FLOAT): Item price
+        - description (STRING): Item description
+        - photo_url (STRING): URL to item image
+    
+    1.4.2. MainDish extends Item:
+        - cooking_time (INTEGER): Minutes to prepare
+        - ingredients (LIST): List of ingredients
+
+    1.4.3. SideDish extends Item:
+        - is_vegetarian (BOOLEAN): Vegetarian status
+
+    1.4.4. Drink extends Item:
+        - temperature (ENUM): HOT/COLD
+
+1.5. ORDER object:
+    1.5.1. created_at (DATETIME): Order creation time
+    1.5.2. items (LIST): Ordered items
+    1.5.3. delivery_address (ADDRESS): Delivery location
+    1.5.4. total_price (FLOAT): Total order cost
+    1.5.5. status (ENUM): Order status
+    1.5.6. estimated_delivery_time (DATETIME): Expected delivery time
+
+2. Authentication:
+    2.1. User authentication using username/password
+    2.2. Password hashing using SHA-256
+    2.3. Basic role-based access control (Admin/Customer)
+
+3. Database:
+    3.1. ZODB for object persistence
+    3.2. Separate storage for users, admins, and menus
+    3.3. Transaction management for data consistency
