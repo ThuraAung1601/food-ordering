@@ -32,8 +32,9 @@ def initialize_database():
         if not hasattr(root, 'admins'):
             root.admins = BTrees.OOBTree.BTree()
             admin_password = "admin123"
+            # Store only the hashed password
             hash_password = hashlib.sha256(admin_password.encode()).hexdigest()
-            admin = Admin('admin', admin_password, hash_password, 'STAFF001')
+            admin = Admin('admin', hash_password, hash_password, 'STAFF001')
             root.admins[admin.username] = admin
 
         # Initialize menus with sample items
