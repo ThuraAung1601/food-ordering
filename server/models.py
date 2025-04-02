@@ -126,6 +126,13 @@ class Customer(Account, persistent.Persistent):
         self.clear_cart()
         return order
 
+    def confirm_order(self, delivery_address=None):
+        """Create and confirm a new order"""
+        order = self.create_order(delivery_address)
+        if order:
+            order.confirm()
+        return order
+
 # Modify Order class
 # Move Item class and its subclasses before Order class
 class Item(ABC, persistent.Persistent):
@@ -185,3 +192,12 @@ class Order(persistent.Persistent):
     def update_status(self, status):
         if isinstance(status, OrderStatus):
             self.status = status
+
+    def confirm(self):
+        """Confirm the order and set initial status"""
+        if self.status == OrderStatus.PENDING:
+            self.status = OrderStatus.PREPARING
+            if not self.estimated_delivery_time:
+                self.update_delivery_time(45)  # Set default delivery time to 45 minutes
+            return True
+        return False

@@ -45,29 +45,29 @@ def initialize_database():
             
             # Add main dishes
             burger = MainDish("Chicken Burger", 12.99, "Grilled chicken with fresh vegetables", 20)
-            burger.photo_url = "https://example.com/burger.jpg"
+            burger.photo_url = "/static/style/img/burger.png"
             burger.add_ingredient("Chicken patty")
             burger.add_ingredient("Lettuce")
             burger.add_ingredient("Tomato")
             
             pizza = MainDish("Pepperoni Pizza", 15.99, "Classic pepperoni pizza with mozzarella", 25)
-            pizza.photo_url = "https://example.com/pizza.jpg"
+            pizza.photo_url = "/static/style/img/pizza.png"
             pizza.add_ingredient("Pepperoni")
             pizza.add_ingredient("Mozzarella")
             
             # Add side dishes
             fries = SideDish("French Fries", 4.99, "Crispy golden fries", True)
-            fries.photo_url = "https://example.com/fries.jpg"
+            fries.photo_url = "/static/style/img/burger.png"
             
             salad = SideDish("Caesar Salad", 6.99, "Fresh romaine lettuce with caesar dressing", True)
-            salad.photo_url = "https://example.com/salad.jpg"
+            salad.photo_url = "/static/style/img/salad.png"
             
             # Add drinks
             cola = Drink("Coca Cola", 2.99, "Ice-cold cola", DrinkTemperature.COLD)
-            cola.photo_url = "https://example.com/cola.jpg"
+            cola.photo_url = "/static/style/img/pizza.png"
             
             coffee = Drink("Latte", 3.99, "Freshly brewed coffee with milk", DrinkTemperature.HOT)
-            coffee.photo_url = "https://example.com/latte.jpg"
+            coffee.photo_url = "/static/style/img/burger.png"
             
             # Add all items to menu
             for item in [burger, pizza, fries, salad, cola, coffee]:
