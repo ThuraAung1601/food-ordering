@@ -1,9 +1,12 @@
-from fastapi import APIRouter, HTTPException
-from schemas import AddressBase, CustomerBase
-from services import user_service
+from fastapi import APIRouter, HTTPException,Request
+from schemas import AddressBase, CustomerBase, CartItemBase, OrderBase
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from services import user_service,menu_service
 from typing import List
 
 router = APIRouter(prefix="/customers", tags=["customers"])
+templates = Jinja2Templates(directory="../templates")
 
 @router.post("/register")
 async def register_user(customer: CustomerBase):
@@ -14,32 +17,92 @@ async def register_user(customer: CustomerBase):
     )
     if not user:
         raise HTTPException(status_code=400, detail="Username already exists")
-    return {"message": "User registered successfully"}
+    return {"message": "User registered successfully","username": customer.username}
 
 @router.post("/{username}/address/add")
 async def add_delivery_address(username: str, address: AddressBase):
     success = user_service.add_delivery_address(
         username,
-        address  # Pass the entire address object
+        address  
     )
     if not success:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "Delivery address added successfully"}
 
-# Remove the duplicate address/add endpoint
+
+
 @router.post("/login")
-async def login_user(username: str, password: str):
+async def login_user(request: Request):
+    data = await request.json()
+    username = data.get('username')
+    password = data.get('password')
+    
     user = user_service.authenticate_user(username, password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"message": "Login successful"}
+    return {
+        "message": "Login successful",
+        "user_type": "customer",
+        "redirect_path": f"/customers/{username}/dashboard"
+    }
 
+# Add this new route
+@router.get("/{username}/dashboard", response_class=HTMLResponse)
+async def customer_dashboard(request: Request, username: str):
+    orders = user_service.get_user_orders(username) 
+    menus = menu_service.get_all_menus_with_items()
+    return templates.TemplateResponse("customer_dashboard.html", {
+        "request": request,
+        "username": username,
+        "orders": orders,
+        "menus": menus
+    })
+
+
+
+#get all menus
+@router.get("/{username}/menus", response_class=HTMLResponse)
+async def get_customer_menus(request: Request, username: str):
+    menus = menu_service.get_all_menus_with_items()
+    if not menus:
+        raise HTTPException(status_code=404, detail="No menus found")
+    return templates.TemplateResponse("customer_dashboard.html", {
+        "request": request,
+        "username": username,
+        "menus": menus
+    })
+
+
+#get all items in the cart
+@router.get("/{username}/cart")
+async def get_cart_items(request: Request, username: str):
+    cart_items = user_service.get_cart_items(username)
+
+    if request.headers.get("accept") == "application/json":
+        return cart_items
+    else:
+        return templates.TemplateResponse("customer_dashboard.html", {
+            "request": request,
+            "username": username,
+            "cart_items": cart_items
+        })
+    
+   
+#add item to cart
 @router.post("/{username}/cart/add")
-async def add_to_cart(username: str, item_name: str):
-    success = user_service.add_to_cart(username, item_name)
+async def add_to_cart(username: str, cart_item: CartItemBase):
+    success = user_service.add_to_cart(username, cart_item)
     if not success:
         raise HTTPException(status_code=404, detail="User or item not found")
     return {"message": "Item added to cart"}
+
+#remove item from cart
+@router.delete("/{username}/cart/remove")
+async def remove_from_cart(username: str, item_data: CartItemBase):
+    success = user_service.remove_from_cart(username,item_data.item_name)
+    if not success:
+        raise HTTPException(status_code=400,detail="Failed to remove item from cart")
+    return {"message","Item removed successfully"}
 
 @router.post("/{username}/address/save")
 async def save_delivery_address(username: str, address: AddressBase):
@@ -48,18 +111,25 @@ async def save_delivery_address(username: str, address: AddressBase):
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": "Address saved successfully"}
 
+
 @router.post("/{username}/order/create")
-async def create_order(username: str, address: AddressBase = None):
-    order = user_service.create_order(username, address)
+async def create_order(username: str):
+    order_data = OrderBase(
+        delivery_address=None,
+        save_address=False,
+        use_default_address=True
+    )
+    order = user_service.create_order(username, order_data)
     if not order:
         raise HTTPException(status_code=400, detail="Cart is empty")
     return {
         "message": "Order created successfully",
-        "order_id": str(order.created_at),
-        "delivery_address": str(order.delivery_address),
+        "order_id": order.order_id,
+        "delivery_address": order.delivery_address,
         "items": [{"name": item.name, "price": item.price} for item in order.items],
         "total_price": order.total_price,
-        "estimated_delivery": order.estimated_delivery_time
+        "delivery_fee": order.delivery_fee,
+        "estimated_delivery": order.estimated_delivery
     }
 
 @router.post("/{username}/order/confirm")
@@ -74,13 +144,6 @@ async def confirm_order(username: str, address: AddressBase = None):
         "estimated_delivery": order.estimated_delivery_time
     }
 
-# Remove this duplicate route
-# @router.post("/{username}/address/add")
-# async def add_delivery_address(username: str, address: str):
-#     success = user_service.add_delivery_address(username, address)
-#     if not success:
-#         raise HTTPException(status_code=404, detail="User not found")
-#     return {"message": "Delivery address added successfully"}
 
 @router.post("/{username}/password-reset/request")
 async def request_password_reset(username: str):
@@ -106,3 +169,20 @@ async def reset_password(username: str, new_password: str):
     if not user_service.reset_password(username, new_password):
         raise HTTPException(status_code=400, detail="Password reset failed")
     return {"message": "Password reset successful"}
+
+
+@router.get("/{username}/orders", response_class=HTMLResponse)
+async def get_customer_orders(request: Request, username: str):
+    orders = user_service.get_user_orders(username)
+    menus = menu_service.get_all_menus_with_items()  
+    return templates.TemplateResponse("customer_dashboard.html", {
+        "request": request,
+        "username": username,
+        "orders": orders,
+        "menus": menus  
+    })
+
+
+@router.post("/logout")
+async def logout_customer():
+    return {"message": "Logged out successfully"}

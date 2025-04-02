@@ -1,16 +1,27 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from services import admin_service
 from typing import Union
 from schemas import MainDishBase, SideDishBase, DrinkBase, AdminBase
 
 router = APIRouter(prefix="/admin", tags=["admin"])
+templates = Jinja2Templates(directory="../templates")
 
 @router.post("/login")
 async def login_admin(admin: AdminBase):
     result = admin_service.authenticate_admin(admin.username, admin.password)
     if not result:
         raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {"message": "Login successful"}
+    return {
+        "message": "Login successful",
+        "user_type": "admin",
+        "redirect_path": "/admin/dashboard"
+    }
+
+@router.get("/dashboard", response_class=HTMLResponse)
+async def admin_dashboard(request: Request):
+    return templates.TemplateResponse("admin_dashboard.html", {"request": request})
 
 @router.post("/menu/create")
 async def create_menu(name: str):
@@ -85,3 +96,8 @@ async def get_menu_items(menu_name: str):
             } for item in items
         ]
     }
+
+
+@router.post("/logout")
+async def logout_admin():
+    return {"message": "Logged out successfully"}
