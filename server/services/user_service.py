@@ -145,13 +145,12 @@ def get_cart_items(username: str):
     ]
 
 
-
-def remove_from_cart(username : str,item_name: str):
+def remove_from_cart(username: str, item_name: str):
     user = get_user(username)
-    if not user:
+    if not user or not user.cart:
         return False
     
-    for item in user.cart:
+    for item in user.cart[:]:  # Create a copy of the list to iterate
         if item.name == item_name:
             user.cart.remove(item)
             return True

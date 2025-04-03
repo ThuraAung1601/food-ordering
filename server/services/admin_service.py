@@ -5,13 +5,20 @@ from models import Menu, MainDish, SideDish, Drink, DrinkTemperature
 from schemas import MainDishBase, SideDishBase, DrinkBase, CustomerResponse
 from typing import Dict, List
 from models import Menu, Item
+from models import Order, Customer
+from collections import Counter
+from operator import itemgetter
 
 def authenticate_admin(username, password):
-    admin = get_admin(username)
-    if not admin:
+    try:
+        admin = get_admin(username)
+        if not admin:
+            return None
+        hash_password = hashlib.sha256(password.encode()).hexdigest()
+        return admin if admin.hash_password == hash_password else None
+    except Exception as e:
+        print(f"Admin authentication error: {str(e)}")
         return None
-    hash_password = hashlib.sha256(password.encode()).hexdigest()
-    return admin if admin.hash_password == hash_password else None
 
 def create_menu(name):
     menu = Menu(name)
@@ -19,25 +26,42 @@ def create_menu(name):
     return menu
 
 def add_menu_item(menu_name: str, item_type: str, item_data: Union[MainDishBase, SideDishBase, DrinkBase]):
+    # Fetch the menu
     menu = get_menu(menu_name)
     if not menu:
-        return False
+        return False  # Return False if the menu doesn't exist
     
+    # Validate and create the appropriate item based on item_type
     item = None
     if item_type == "main":
+        # Ensure all required fields are present for MainDish
+        if not all([item_data.name, item_data.price, item_data.description, item_data.cooking_time]):
+            return False  # Fail if any required field is missing
         item = MainDish(item_data.name, item_data.price, item_data.description, item_data.cooking_time)
     elif item_type == "side":
+        # Ensure all required fields are present for SideDish
+        if not all([item_data.name, item_data.price, item_data.description, item_data.is_vegetarian]):
+            return False  # Fail if any required field is missing
         item = SideDish(item_data.name, item_data.price, item_data.description, item_data.is_vegetarian)
     elif item_type == "drink":
+        # Ensure all required fields are present for Drink
+        if not all([item_data.name, item_data.price, item_data.description, item_data.temperature]):
+            return False  # Fail if any required field is missing
+        # Handle DrinkTemperature enumeration
         temp = DrinkTemperature.COLD if item_data.temperature.lower() == "cold" else DrinkTemperature.HOT
         item = Drink(item_data.name, item_data.price, item_data.description, temp)
     
     if item:
+        # Set the photo URL
         item.photo_url = item_data.photo_url
+        # Add item to the menu
         menu.add_item(item)
+        # Update menu
         update_menu(menu_name, menu)
         return True
+    
     return False
+
 
 def get_all_customers() -> List[CustomerResponse]:
     from database import root
