@@ -115,9 +115,6 @@ img{
 }
 
 /*========== CLASS CSS ==========*/
-.section{
-    
-}
 
 .section-title, .section-subtitle{
   text-align: center;
@@ -156,6 +153,7 @@ img{
   left: 0;
   z-index: var(--z-fixed);
   background-color: var(--body-color);
+  margin-left: 80px;
 }
 
 /*========== NAV ==========*/
