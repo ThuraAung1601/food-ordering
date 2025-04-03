@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException,Request
 from schemas import AddressBase, CustomerBase, CartItemBase, OrderBase
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse,JSONResponse
 from fastapi.templating import Jinja2Templates
 from services import user_service,menu_service
 from typing import List
@@ -33,43 +33,47 @@ async def add_delivery_address(username: str, address: AddressBase):
 
 @router.post("/login")
 async def login_user(request: Request):
-    data = await request.json()
-    username = data.get('username')
-    password = data.get('password')
-    
-    user = user_service.authenticate_user(username, password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {
-        "message": "Login successful",
-        "user_type": "customer",
-        "redirect_path": f"/customers/{username}/dashboard"
-    }
-
-# Add this new route
-@router.get("/{username}/dashboard", response_class=HTMLResponse)
-async def customer_dashboard(request: Request, username: str):
-    orders = user_service.get_user_orders(username) 
-    menus = menu_service.get_all_menus_with_items()
-    return templates.TemplateResponse("customer_dashboard.html", {
-        "request": request,
-        "username": username,
-        "orders": orders,
-        "menus": menus
-    })
-
-
+    try:
+        data = await request.json()
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            raise HTTPException(status_code=400, detail="Username and password are required")
+        
+        user = user_service.authenticate_user(username, password)
+        if not user:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        return JSONResponse(content={
+            "status": "success",
+            "message": "Login successful",
+            "user_type": "customer",
+            "redirect_path": f"/customers/{username}/dashboard"
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 #get all menus
-@router.get("/{username}/menus", response_class=HTMLResponse)
+@router.get("/{username}/menus", response_class=JSONResponse)
 async def get_customer_menus(request: Request, username: str):
     menus = menu_service.get_all_menus_with_items()
     if not menus:
         raise HTTPException(status_code=404, detail="No menus found")
+    menus_dict = {menu["name"]: menu["items"] for menu in menus}
+    return JSONResponse(content={"username": username, "menus": menus_dict})
+
+
+@router.get("/{username}/orders")
+async def get_customer_orders(request: Request, username: str):
+    orders = user_service.get_user_orders(username)
+    return orders
+
+@router.get("/{username}/dashboard", response_class=HTMLResponse)
+async def customer_dashboard(request: Request, username: str):
     return templates.TemplateResponse("customer_dashboard.html", {
         "request": request,
-        "username": username,
-        "menus": menus
+        "username": username
     })
 
 
@@ -92,17 +96,19 @@ async def get_cart_items(request: Request, username: str):
 @router.post("/{username}/cart/add")
 async def add_to_cart(username: str, cart_item: CartItemBase):
     success = user_service.add_to_cart(username, cart_item)
+    print(success)
     if not success:
         raise HTTPException(status_code=404, detail="User or item not found")
     return {"message": "Item added to cart"}
 
+
 #remove item from cart
 @router.delete("/{username}/cart/remove")
 async def remove_from_cart(username: str, item_data: CartItemBase):
-    success = user_service.remove_from_cart(username,item_data.item_name)
+    success = user_service.remove_from_cart(username, item_data.item_name)
     if not success:
-        raise HTTPException(status_code=400,detail="Failed to remove item from cart")
-    return {"message","Item removed successfully"}
+        raise HTTPException(status_code=400, detail="Failed to remove item from cart")
+    return {"message": "Item removed successfully"}
 
 @router.post("/{username}/address/save")
 async def save_delivery_address(username: str, address: AddressBase):

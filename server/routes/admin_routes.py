@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Request
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse,JSONResponse
 from fastapi.templating import Jinja2Templates
 from services import admin_service
 from typing import Union
@@ -9,15 +9,27 @@ router = APIRouter(prefix="/admin", tags=["admin"])
 templates = Jinja2Templates(directory="../templates")
 
 @router.post("/login")
-async def login_admin(admin: AdminBase):
-    result = admin_service.authenticate_admin(admin.username, admin.password)
-    if not result:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    return {
-        "message": "Login successful",
-        "user_type": "admin",
-        "redirect_path": "/admin/dashboard"
-    }
+async def login_admin(request: Request):
+    try:
+        data = await request.json()
+        username = data.get('username')
+        password = data.get('password')
+        
+        if not username or not password:
+            raise HTTPException(status_code=400, detail="Username and password are required")
+        
+        result = admin_service.authenticate_admin(username, password)
+        if not result:
+            raise HTTPException(status_code=401, detail="Invalid credentials")
+        
+        return JSONResponse(content={
+            "status": "success",
+            "message": "Login successful",
+            "user_type": "admin",
+            "redirect_path": "/admin/dashboard"
+        })
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/dashboard", response_class=HTMLResponse)
 async def admin_dashboard(request: Request):
@@ -39,8 +51,9 @@ async def delete_menu(menu_name: str):
 async def add_menu_item(menu_name: str, item_type: str, item: Union[MainDishBase, SideDishBase, DrinkBase]):
     success = admin_service.add_menu_item(menu_name, item_type, item)
     if not success:
-        raise HTTPException(status_code=404, detail="Menu not found")
+        raise HTTPException(status_code=422, detail="Missing required fields or invalid data")
     return {"message": "Item added successfully"}
+
 
 @router.put("/menu/{menu_name}/items/{item_name}")
 async def update_menu_item(menu_name: str, item_name: str, item: Union[MainDishBase, SideDishBase, DrinkBase]):
