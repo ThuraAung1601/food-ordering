@@ -14,9 +14,6 @@ templates = Jinja2Templates(directory=os.path.join(PROJECT_ROOT, "templates"))
 async def customer_login_page(request: Request):
     return templates.TemplateResponse("login.html", {"request": request})
 
-@router.get("/admin/login", response_class=HTMLResponse)
-async def admin_login_page(request: Request):
-    return templates.TemplateResponse("admin_login.html", {"request": request})
 
 @router.get("/register", response_class=HTMLResponse)
 async def register_page(request: Request):
@@ -28,29 +25,3 @@ async def index(request: Request):
         "request": request,
         "static_path": "/static"
     })
-
-@router.post("/login")
-async def login(request: Request):
-    data = await request.json()
-    username = data.get('username')
-    password = data.get('password')
-    
-    # Try admin login first
-    admin = admin_service.authenticate_admin(username, password)
-    if admin:
-        return {
-            "message": "Login successful",
-            "user_type": "admin",
-            "redirect_path": "/admin/dashboard"
-        }
-    
-    # If not admin, try customer login
-    user = user_service.authenticate_user(username, password)
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
-    
-    return {
-        "message": "Login successful",
-        "user_type": "customer",
-        "redirect_path": f"/customers/{username}/dashboard"
-    }
