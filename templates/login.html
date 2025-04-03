@@ -3,78 +3,14 @@
 <head>
     <title>Login</title>
     <link rel="stylesheet" type="text/css" href="/static/style/css/style-login.css"/>
+    <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
+    <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username:</label>
-                <input type="text" id="username" name="username" required>
-            </div>
-            <div class="form-group">
-                <label for="password">Password:</label>
-                <input type="password" id="password" name="password" required>
-            </div>
-            <button type="submit" class="login-button">Login</button>
-        </form>
-        <p>Don't have an account? <a href="/register">Register here</a></p>
-    </div>
+    <section>
+        <div id="app"></div>
+    </section>
 
-    <script>
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                // Try admin login first
-                const adminResponse = await fetch('/admin/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        username: username,
-                        password: password,
-                        staff_id: "STAFF001"
-                    }),
-                });
-
-                console.log('Admin login response:', await adminResponse.clone().json().catch(() => 'No JSON')); // Debug line
-
-                if (adminResponse.ok) {
-                    const data = await adminResponse.json();
-                    window.location.href = '/admin/dashboard';
-                    return;
-                }
-
-                // If admin login fails, try regular user login
-                const customerResponse = await fetch('/customers/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ 
-                        username: username,
-                        password: password
-                    }),
-                });
-
-                const responseData = await customerResponse.json();
-                console.log('Login response:', responseData);  // Debug log
-
-                if (customerResponse.ok) {
-                    console.log('Login successful, redirecting to:', responseData.redirect_path);
-                    window.location.href = responseData.redirect_path;
-                } else {
-                    alert(responseData.detail || 'Invalid credentials');
-                }
-            } catch (error) {
-                console.error('Login error:', error);
-                alert('Login failed');
-            }
-        });
-    </script>
+    <script type="py" src="/static/js/login.py"></script>
 </body>
 </html>
