@@ -24,7 +24,7 @@ body {
   justify-content: center;
 }
 
-.login-container,.register-container {
+.login-container,.register-container,.forgot-password-container {
   width: 100%;
   padding: 20px;
   border: 2px solid var(--first-color);
@@ -77,4 +77,52 @@ input:focus-within {
 .login-button:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(6, 156, 84, 0.2);
+}
+
+
+
+.forgot-password-container {
+  max-width: 400px;
+  margin: 50px auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+.reset-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.form-group label {
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.reset-btn {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.reset-btn:hover {
+  background-color: #45a049;
 }

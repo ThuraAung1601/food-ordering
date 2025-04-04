@@ -341,8 +341,60 @@ button.delete:hover {
     border: 1px solid #ddd;
     border-radius: 8px;
     padding: 15px;
-    background: white;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    background-color: white;
+}
+
+.order-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.status {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+}
+
+.status.pending { background-color: #ffd700; }
+.status.accepted { background-color: #90EE90; }
+.status.rejected { background-color: #ffcccb; }
+
+.order-details {
+    margin-bottom: 15px;
+}
+
+.order-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.status-select {
+    padding: 5px;
+    border-radius: 4px;
+}
+
+.reason-input {
+    flex: 1;
+    padding: 5px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.update-status-btn {
+    padding: 5px 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.update-status-btn:hover {
+    background-color: #45a049;
 }
 
 .item-card img {
@@ -394,9 +446,9 @@ button.delete:hover {
     }
 }
 
-
-
-
+.order-details ul {
+    margin-left: 30px;
+}
 .customer-card {
     width: 50%;
     display: flex;
@@ -412,6 +464,7 @@ button.delete:hover {
     font-weight: var(--font-medium);
     color: var(--title-color);
 }
+
 
 .order-count {
     color: var(--text-color);
