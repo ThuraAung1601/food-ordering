@@ -31,13 +31,14 @@ class AdminDashboard(Widget):
         self.container = document.createElement("div")
         self.container.className = "admin-container"
         
-        # Create navigation
+       
         nav = document.createElement("nav")
         nav.className = "admin-nav"
         nav.innerHTML = """
             <h1>Admin Dashboard</h1>
             <ul>
                 <li><a href="#menus" data-section="menus">Manage Menus</a></li>
+                <li><a href="#orders" data-section="orders">Manage Orders</a></li>
                 <li><a href="#customerList" data-section="customerList">View Customers</a></li>
                 <li><a href="#" id="logoutLink">Logout</a></li>
             </ul>
@@ -106,6 +107,13 @@ class AdminDashboard(Widget):
             </div>
         """
         
+        orders_section = document.createElement("section")
+        orders_section.id = "orders"
+        orders_section.className = "dashboard-section"
+        orders_section.innerHTML = """
+            <h2>Order Management</h2>
+            <div id="ordersList"></div>
+        """
        
         customers_section = document.createElement("section")
         customers_section.id = "customerList"
@@ -119,6 +127,7 @@ class AdminDashboard(Widget):
         
         
         content.appendChild(menus_section)
+        content.appendChild(orders_section)
         content.appendChild(customers_section)
         self.container.appendChild(nav)
         self.container.appendChild(content)
@@ -130,9 +139,10 @@ class AdminDashboard(Widget):
        
         asyncio.ensure_future(self.loadMenus())
         asyncio.ensure_future(self.loadCustomers())
+        asyncio.ensure_future(self.loadOrders())
         
         
-        self.showSection('menus')
+        self.showSection('orders')
 
     def setupEventListeners(self):
        
@@ -196,7 +206,6 @@ class AdminDashboard(Widget):
         if target_section:
             target_section.style.display = 'block'
             
-            # Load appropriate data based on section
             if section_id == 'customerList':
                 asyncio.ensure_future(self.loadCustomers())
             elif section_id == 'menus':
@@ -286,6 +295,113 @@ class AdminDashboard(Widget):
         except Exception as e:
             console.error('Error loading customers:', str(e))
             document.getElementById('customersList').innerHTML = '<p>Error loading customers. Please try again later.</p>'
+    async def loadOrders(self):
+        try:
+            response = await pyfetch(
+                "/admin/orders",
+                method="GET",
+                headers={"Accept": "application/json"}
+            )
+            
+            if response.ok:
+                data = await response.json()
+                ordersList = document.getElementById('ordersList')
+                
+                if data.get('orders'):
+                    html = ""
+                    for order in data['orders']:
+                        items_html = "".join([
+                            f"<li>{item['name']} - ${item['price']:.2f}</li>"
+                            for item in order['items']
+                        ])
+                        
+                        html += f"""
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <h3>Order #{order['order_id']}</h3>
+                                    <span class="status {order['status'].lower()}">{order['status']}</span>
+                                </div>
+                                <div class="order-details">
+                                    <p>Customer: {order['customer_name']}</p>
+                                    <p>Address: {order['delivery_address']}</p>
+                                    <h4>Items:</h4>
+                                    <ul>{items_html}</ul>
+                                    <p>Total: ${order['total_amount']:.2f}</p>
+                                    <p>Order Date: {order['created_at']}</p>
+                                </div>
+                                <div class="order-actions">
+                                    <select class="status-select" data-order-id="{order['order_id']}">
+                                        <option value="PENDING" {' selected' if order['status'] == 'PENDING' else ''}>Pending</option>
+                                        <option value="ACCEPTED" {' selected' if order['status'] == 'ACCEPTED' else ''}>Accept</option>
+                                        <option value="REJECTED" {' selected' if order['status'] == 'REJECTED' else ''}>Reject</option>
+                                    </select>
+                                    <input type="text" class="reason-input" 
+                                        placeholder="Reason (required for rejection)"
+                                        style="display: none;">
+                                    <button class="update-status-btn" 
+                                        data-order-id="{order['order_id']}">Update Status</button>
+                                </div>
+                            </div>
+                        """
+                    ordersList.innerHTML = html
+                    
+                    for select in ordersList.querySelectorAll('.status-select'):
+                        select.onchange = create_proxy(self.handleStatusChange)
+                    
+                    for btn in ordersList.querySelectorAll('.update-status-btn'):
+                        handler = create_proxy(
+                            lambda e: asyncio.ensure_future(
+                                self.updateOrderStatus(
+                                    e.target.dataset.orderId
+                                )
+                            )
+                        )
+                        btn.onclick = handler
+                else:
+                    ordersList.innerHTML = '<p>No orders found.</p>'
+        except Exception as e:
+            console.error('Error loading orders:', str(e))
+            document.getElementById('ordersList').innerHTML = '<p>Error loading orders.</p>'
+    
+
+    def handleStatusChange(self, event):
+        order_card = event.target.closest('.order-card')
+        reason_input = order_card.querySelector('.reason-input')
+        if event.target.value == 'REJECTED':
+            reason_input.style.display = 'block'
+        else:
+            reason_input.style.display = 'none'
+
+    async def updateOrderStatus(self, order_id):
+        order_card = document.querySelector(f'.order-card [data-order-id="{order_id}"]').closest('.order-card')
+        status = order_card.querySelector('.status-select').value
+        reason = order_card.querySelector('.reason-input').value
+        
+        if status == 'REJECTED' and not reason:
+            window.alert('Please provide a reason for rejection')
+            return
+        
+        try:
+            response = await pyfetch(
+                f"/admin/orders/{order_id}/status",
+                method="PUT",
+                headers={
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body=json.dumps({
+                    "status": status,
+                    "reason": reason if status == 'REJECTED' else ""
+                })
+            )
+            
+            if response.ok:
+                await self.loadOrders()
+            else:
+                window.alert('Failed to update order status')
+        except Exception as e:
+            console.error('Error updating order status:', str(e))
+            window.alert('Error updating order status')
 
     def showCreateMenuForm(self, event):
         if event:
@@ -350,7 +466,7 @@ class AdminDashboard(Widget):
         elif item_type == 'side':
             default_image = '/static/style/img/salad.png'
         elif item_type == 'drink':
-            default_image = '/static/style/img/noodle.png'
+            default_image = '/static/style/img/pizza.png'
         
         item_data = {
             "name": item_name,
@@ -411,7 +527,7 @@ class AdminDashboard(Widget):
                         elif 'is_vegetarian' in item:
                             default_image = '/static/style/img/salad.png'
                         elif 'temperature' in item:
-                            default_image = '/static/style/img/noodle.png'
+                            default_image = '/static/style/img/pizza.png'
                         else:
                             default_image = '/static/style/img/pizza.png'
                         

@@ -130,6 +130,13 @@ class LoginForm(Widget):
         self.regLink.href = "/register"
         self.regLink.innerHTML = "Register here"
         self.register.appendChild(self.regLink)
+
+        self.forgot = document.createElement("p")
+        self.forgot.innerHTML = "Forgot your password? "
+        self.forgotLink = document.createElement("a")
+        self.forgotLink.href = "/forgot-password"
+        self.forgotLink.innerHTML = "Reset here"
+        self.forgot.appendChild(self.forgotLink)
         
         self.nameFormGroup.appendChild(self.nameLabel)
         self.nameFormGroup.appendChild(self.nameInput)
@@ -143,11 +150,10 @@ class LoginForm(Widget):
         self.container.appendChild(self.h2)
         self.container.appendChild(self.form)
         self.container.appendChild(self.register)
+        self.form.appendChild(self.forgot)
         
         self.element.appendChild(self.container)
         
-       
-        self.handle_login_proxy = create_proxy(self.handle_login)
         self.handle_login_proxy = create_proxy(self.handle_login)
         self.login_btn.addEventListener("click", self.handle_login_proxy)
 

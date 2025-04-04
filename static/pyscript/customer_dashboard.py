@@ -40,7 +40,7 @@ class CustomerDashboard(Widget):
         nav_header.className = "nav-header"
         nav_header.innerHTML = f"""
             <i class='bx bx-restaurant logo-icon'></i>
-            <h1>Silver Leaf</h1>
+            <h1>Mingalar</h1>
         """
         
         nav_links = document.createElement("ul")
@@ -72,7 +72,6 @@ class CustomerDashboard(Widget):
             li.appendChild(a)
             nav_links.appendChild(li)
         
-        # Create main content sections
         sections_data = [
             {"id": "menu", "title": "Our Menu", "class": "menu-grid"},
             {"id": "cart", "title": "My Cart", "class": "cart-grid"},
@@ -131,7 +130,7 @@ class CustomerDashboard(Widget):
 
                 if response.ok:
                     data = await response.json()
-                    # console.log('Menu data:', data)  
+                   
 
                     menus = data.get('menus', {})  
 
@@ -389,13 +388,7 @@ class CustomerDashboard(Widget):
                         for order in orders:
                             orderCard = document.createElement('div')
                             orderCard.className = 'order-card'
-                            
-                            order_date = order.get('created_at', 'Unknown date')
-                            estimated_delivery = order.get('estimated_delivery', '')
-                            status = order.get('status', 'Processing')
-                            total = order.get('total_price', 0)
-                            address = order.get('delivery_address', 'No address provided')
-                            order_id = order.get('order_id', 'Unknown')[:8]  # Get first 8 chars of order ID
+                            order_id = str(order.get('order_id', 'Unknown'))
                             
                             items_html = ""
                             for item in order.get('items', []):
@@ -406,24 +399,19 @@ class CustomerDashboard(Widget):
                                     </div>
                                 """
                             
-                            delivery_html = f"""
-                                <p>Estimated Delivery: {estimated_delivery}</p>
-                            """ if estimated_delivery else ""
-                            
                             orderCard.innerHTML = f"""
                                 <div class="order-header">
                                     <h3>Order #{order_id}</h3>
-                                    <span class="status {status.lower()}">{status}</span>
+                                    <span class="status {order.get('status', '').lower()}">{order.get('status', 'Processing')}</span>
                                 </div>
                                 <div class="order-details">
                                     <div class="items-list">
                                         {items_html}
                                     </div>
                                     <div class="order-summary">
-                                        <p>Total: ${total:.2f}</p>
-                                        <p>Delivery to: {address}</p>
-                                        <p>Ordered: {order_date}</p>
-                                        {delivery_html}
+                                        <p>Total: ${order.get('total_price', 0):.2f}</p>
+                                        <p>Delivery to: {order.get('delivery_address', 'No address provided')}</p>
+                                        <p>Ordered: {order.get('created_at', 'Unknown date')}</p>
                                     </div>
                                 </div>
                             """

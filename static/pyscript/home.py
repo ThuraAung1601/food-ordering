@@ -29,7 +29,7 @@ class Header(Widget):
         self.header.style.marginLeft = "80px"
         self.header.innerHTML = """
             <nav class=nav bd-container>
-                 <a href="#" class="nav__logo"><h1>Silver Leaf</h1></a>
+                 <a href="#" class="nav__logo"><h1>Mingalar</h1></a>
                 <div class="nav__menu" id="nav-menu">
                     <ul class="nav__list">
                         <li class="nav__item"><a href="#home" class="nav__link active">Home</a></li>
@@ -122,7 +122,7 @@ class Footer(Widget):
         self.footer.innerHTML = """
             <div class="footer__container bd-grid">
                 <div class="footer__content">
-                    <a href="#" class="footer__logo">Silver Leaf</a>
+                    <a href="#" class="footer__logo">Mingalar</a>
                     <span class="footer__description">Restaurant</span>
                     <div>
                         <a href="#" class="footer__social"><i class='bx bxl-facebook'></i></a>
@@ -155,7 +155,7 @@ class Footer(Widget):
                         <li>Chalong Krung</li>
                         <li>Lat Krabang, Bangkok</li>
                         <li>09-123-456</li>
-                        <li>silverleaf@gmail.com</li>
+                        <li>mingalar@gmail.com</li>
                     </ul>
                 </div>
              </div>
