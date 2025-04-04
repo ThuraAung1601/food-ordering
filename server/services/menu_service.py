@@ -5,7 +5,7 @@ def get_all_menus() -> Dict:
     return {name: menu.items for name, menu in root.menus.items()}
 
 def get_menu(menu_name: str) -> List:
-    from database import root  # Import here to avoid circular import
+    from database import root  
     menu = root.menus.get(menu_name)
     return menu.items if menu else None
 

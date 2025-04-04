@@ -26,37 +26,28 @@ def create_menu(name):
     return menu
 
 def add_menu_item(menu_name: str, item_type: str, item_data: Union[MainDishBase, SideDishBase, DrinkBase]):
-    # Fetch the menu
     menu = get_menu(menu_name)
     if not menu:
-        return False  # Return False if the menu doesn't exist
+        return False  
     
-    # Validate and create the appropriate item based on item_type
     item = None
     if item_type == "main":
-        # Ensure all required fields are present for MainDish
         if not all([item_data.name, item_data.price, item_data.description, item_data.cooking_time]):
-            return False  # Fail if any required field is missing
+            return False  
         item = MainDish(item_data.name, item_data.price, item_data.description, item_data.cooking_time)
     elif item_type == "side":
-        # Ensure all required fields are present for SideDish
         if not all([item_data.name, item_data.price, item_data.description, item_data.is_vegetarian]):
-            return False  # Fail if any required field is missing
+            return False  
         item = SideDish(item_data.name, item_data.price, item_data.description, item_data.is_vegetarian)
     elif item_type == "drink":
-        # Ensure all required fields are present for Drink
         if not all([item_data.name, item_data.price, item_data.description, item_data.temperature]):
-            return False  # Fail if any required field is missing
-        # Handle DrinkTemperature enumeration
+            return False  
         temp = DrinkTemperature.COLD if item_data.temperature.lower() == "cold" else DrinkTemperature.HOT
         item = Drink(item_data.name, item_data.price, item_data.description, temp)
     
     if item:
-        # Set the photo URL
         item.photo_url = item_data.photo_url
-        # Add item to the menu
         menu.add_item(item)
-        # Update menu
         update_menu(menu_name, menu)
         return True
     
@@ -90,7 +81,6 @@ def update_menu_item(menu_name: str, item_name: str, item_data: Union[MainDishBa
     if not menu:
         return False
     
-    # Find and remove old item
     old_item = None
     for i, existing_item in enumerate(menu.items):
         if existing_item.name == item_name:
@@ -100,7 +90,6 @@ def update_menu_item(menu_name: str, item_name: str, item_data: Union[MainDishBa
     if not old_item:
         return False
     
-    # Create new item with updated data
     item = None
     if isinstance(old_item, MainDish):
         item = MainDish(item_data.name, item_data.price, item_data.description, item_data.cooking_time)
@@ -139,3 +128,42 @@ def get_menu_items(menu_name: str) -> List[Item]:
     if not menu:
         return []
     return menu.items
+
+
+def get_all_orders():
+    """Get all orders from all customers"""
+    orders = []
+    for customer in root.users.values():
+        if isinstance(customer, Customer):
+            for order in customer.orders:
+                orders.append({
+                    "order_id": id(order),  
+                    "customer_name": customer._name,
+                    "customer_username": customer.username,
+                    "items": [
+                        {
+                            "name": item.name,
+                            "price": item.price
+                        } for item in order.items
+                    ],
+                    "total_amount": order.total_price,
+                    "status": order.status,
+                    "created_at": order.created_at,
+                    "delivery_address": str(order.delivery_address),
+                    "reason": getattr(order, 'rejection_reason', "")
+                })
+    return sorted(orders, key=lambda x: x['created_at'], reverse=True)
+
+def update_order_status(order_id: str, status: str, reason: str = ""):
+    """Update order status and optionally add rejection reason"""
+    order_id = int(order_id)  
+    for customer in root.users.values():
+        if isinstance(customer, Customer):
+            for order in customer.orders:
+                if id(order) == order_id:  
+                    order.status = status
+                    if status == "REJECTED":
+                        order.rejection_reason = reason
+                    transaction.commit()
+                    return True
+    return False

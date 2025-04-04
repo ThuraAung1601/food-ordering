@@ -31,18 +31,22 @@ def request_password_reset(username: str) -> Optional[str]:
     return create_reset_token(username)
 
 def verify_reset_token_and_update_password(token: str, new_password: str) -> bool:
-    username = verify_reset_token(token)
-    if not username:
+    try:
+        username = verify_reset_token(token)
+        if not username:
+            return False
+        
+        user = get_user(username)
+        if not user:
+            return False
+        
+        hash_password = hashlib.sha256(new_password.encode()).hexdigest()
+        user._password = new_password 
+        user._hash_password = hash_password  
+        return True
+    except Exception as e:
+        print(f"Password reset error: {str(e)}")
         return False
-    
-    user = get_user(username)
-    if not user:
-        return False
-    
-    hash_password = hashlib.sha256(new_password.encode()).hexdigest()
-    user._password = new_password
-    user._hash_password = hash_password
-    return True
 
 def reset_password(username: str, new_password: str) -> bool:
     user = get_user(username)
@@ -69,7 +73,6 @@ def confirm_order(username: str, delivery_address: str = None):
         return None
     order = user.confirm_order(delivery_address)
     if order:
-        # Set estimated delivery time (e.g., 45 minutes)
         order.update_delivery_time(45)
     return order
 
@@ -150,7 +153,7 @@ def remove_from_cart(username: str, item_name: str):
     if not user or not user.cart:
         return False
     
-    for item in user.cart[:]:  # Create a copy of the list to iterate
+    for item in user.cart[:]: 
         if item.name == item_name:
             user.cart.remove(item)
             return True
@@ -164,7 +167,7 @@ def get_user_orders(username: str):
     
     return [
         {
-            "order_id": str(order.created_at),
+            "order_id": id(order),
             "items": [{
                 "name": item.name,
                 "price": item.price,
@@ -172,7 +175,7 @@ def get_user_orders(username: str):
             } for item in order.items],
             "total_price": order.total_price,
             "delivery_address": str(order.delivery_address),
-            "status": order.status.value,
+            "status": order.status,
             "created_at": order.created_at,
             "estimated_delivery": order.estimated_delivery_time
         }
