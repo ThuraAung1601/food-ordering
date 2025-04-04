@@ -53,22 +53,21 @@ class AdminDashboard(Widget):
         menus_section.className = "dashboard-section"
         menus_section.innerHTML = """
             <h2>Menu Management</h2>
-            <div class="action-buttons">
-                <button id="createMenuBtn">Create New Menu</button>
-            </div>
-            <div id="createMenuForm" class="menu-form" style="display: none;">
+            <button id="createMenuBtn" class="create-btn">Create New Menu</button>
+            <div id="createMenuForm" style="display: none;">
+                <h3>Create New Menu</h3>
                 <form id="menuForm">
                     <div class="form-group">
                         <label for="menuName">Menu Name:</label>
                         <input type="text" id="menuName" required>
                     </div>
                     <div class="form-actions">
-                        <button type="submit" class="submit-btn">Create Menu</button>
+                        <button type="submit" class="submit-btn">Create</button>
                         <button type="button" class="cancel-btn" id="cancelMenuBtn">Cancel</button>
                     </div>
                 </form>
             </div>
-            <div id="addItemForm" class="menu-form" style="display: none;">
+            <div id="addItemForm" style="display: none;">
                 <h3>Add Item to <span id="currentMenuName"></span></h3>
                 <form id="itemForm">
                     <div class="form-group">
@@ -91,9 +90,44 @@ class AdminDashboard(Widget):
                         <label for="description">Description:</label>
                         <textarea id="description" required></textarea>
                     </div>
+                    
+                    <div id="mainDishFields" class="type-specific-fields">
+                        <div class="form-group">
+                            <label for="cookingTime">Cooking Time (minutes):</label>
+                            <input type="number" id="cookingTime" min="1" value="15">
+                        </div>
+                        <br/><br/>
+                    </div>
+                    
+                    <div id="sideDishFields" class="type-specific-fields" style="display: none;">
+                        <div class="form-group">
+                            <label>Is Vegetarian:</label>
+                            <div class="radio-group">
+                                <input type="radio" id="vegetarianYes" name="isVegetarian" value="true" checked>
+                                <label for="vegetarianYes">Yes</label>
+                                <input type="radio" id="vegetarianNo" name="isVegetarian" value="false">
+                                <label for="vegetarianNo">No</label>
+                                <br/><br/>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="drinkFields" class="type-specific-fields" style="display: none;">
+                        <div class="form-group">
+                            <label>Temperature:</label>
+                            <div class="radio-group">
+                                <input type="radio" id="tempCold" name="temperature" value="COLD" checked>
+                                <label for="tempCold">Cold</label>
+                                <input type="radio" id="tempHot" name="temperature" value="HOT">
+                                <label for="tempHot">Hot</label>
+                                <br/><br/>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="form-actions">
                         <button type="submit" class="submit-btn">Add Item</button>
-                        <button type="button" class="done-btn" id="doneItemBtn">Done</button>
+                        <button type="button" class="cancel-btn" id="doneItemBtn">Cancel</button>
                     </div>
                 </form>
             </div>
@@ -443,6 +477,44 @@ class AdminDashboard(Widget):
         document.getElementById('menuList').style.display = 'none'
         document.getElementById('currentMenuName').textContent = menu_name
         document.getElementById('addItemForm').style.display = 'block'
+        
+        # Reset and show the appropriate fields for the default selected item type
+        item_type = document.getElementById('itemType').value
+        
+        # Add event listener for item type dropdown
+        item_type_select = self.container.querySelector('#itemType')
+        if item_type_select:
+            handler = create_proxy(self.handleItemTypeChange)
+            item_type_select.addEventListener('change', handler)
+        
+        # Hide all type-specific fields first
+        type_fields = self.container.querySelectorAll('.type-specific-fields')
+        for field in type_fields:
+            field.style.display = 'none'
+        
+        # Show the appropriate fields based on selected type
+        if item_type == 'main':
+            self.container.querySelector('#mainDishFields').style.display = 'block'
+        elif item_type == 'side':
+            self.container.querySelector('#sideDishFields').style.display = 'block'
+        elif item_type == 'drink':
+            self.container.querySelector('#drinkFields').style.display = 'block'
+
+    def handleItemTypeChange(self, event):
+        item_type = event.target.value
+        
+        # Hide all type-specific fields first
+        type_fields = self.container.querySelectorAll('.type-specific-fields')
+        for field in type_fields:
+            field.style.display = 'none'
+        
+        # Show the appropriate fields based on selected type
+        if item_type == 'main':
+            self.container.querySelector('#mainDishFields').style.display = 'block'
+        elif item_type == 'side':
+            self.container.querySelector('#sideDishFields').style.display = 'block'
+        elif item_type == 'drink':
+            self.container.querySelector('#drinkFields').style.display = 'block'
 
     def hideAddItemForm(self, event):
         if event:
@@ -461,13 +533,6 @@ class AdminDashboard(Widget):
         price = document.getElementById('price').value
         description = document.getElementById('description').value
         
-        if item_type == 'main':
-            default_image = '/static/style/img/burger.png'
-        elif item_type == 'side':
-            default_image = '/static/style/img/salad.png'
-        elif item_type == 'drink':
-            default_image = '/static/style/img/pizza.png'
-        
         item_data = {
             "name": item_name,
             "price": float(price),
@@ -475,13 +540,28 @@ class AdminDashboard(Widget):
             "photo_url": default_image
         }
         
+        # Add type-specific properties
         if item_type == 'main':
-            item_data["cooking_time"] = 15
+            item_data["cooking_time"] = int(document.getElementById('cookingTime').value)
         elif item_type == 'side':
-            item_data["is_vegetarian"] = True
+            item_data["is_vegetarian"] = document.getElementById('vegetarianYes').checked
         elif item_type == 'drink':
-            item_data["temperature"] = "COLD"
+            item_data["temperature"] = "COLD" if document.getElementById('tempCold').checked else "HOT"
         
+        # Default images based on item type
+        if item_type == 'main':
+            default_image = '/static/style/img/main-dish.png'
+        elif item_type == 'side' and item_data["is_vegetarian"] == True:
+            default_image = '/static/style/img/salad.png'
+        elif item_type =='side' and item_data["is_vegetarian"] == False:
+            default_image = '/static/style/img/nachos.png'
+        elif item_type == 'drink' and item_data["temperature"] == "COLD":
+            default_image = '/static/style/img/iced-coffee.png'
+        elif item_type == 'drink' and item_data["temperature"] == "HOT":
+            default_image = '/static/style/img/coffee-cup.png'
+        else:
+            default_image = '/static/style/img/dinner.png'
+
         try:
             response = await pyfetch(f"/admin/menu/{window.encodeURIComponent(menu_name)}/items?item_type={item_type}", 
                        method="POST",

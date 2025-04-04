@@ -64,8 +64,9 @@ class MainContent(Widget):
                         <h1 class="home__title">Welcome! <br>Try Our Food</br></h1>
                         <h3 class="home__subtitle">Every good food brings people together</h3>
                         <p class="home__description">
-                            Experience the best cuisine in town with our carefully crafted dishes.
+                            Experience the best Burmese cuisine in town.
                         </p>
+                        <br/>
                         <a href="" class="button">View Menu</a>
                     </div>
                     <img src="/static/style/img/home.png" alt="" class="home__img">
@@ -134,8 +135,7 @@ class Footer(Widget):
                 <div class="footer__content">
                     <h3 class="footer__title">Services</h3>
                     <ul>
-                        <li><a href="table.html" class="footer__link">Table Reservation</a></li>
-                        <li><a href="menu.html" class="footer__link">Order Food</a></li>
+                        <li><a href="#" class="footer__link">Order Food</a></li>
                         <li><a href="#" class="footer__link">Delivery Tracking</a></li>
                     </ul>
                 </div>
