@@ -1,9 +1,9 @@
 import logging
 import persistent
 from abc import ABC, abstractmethod
-from datetime import datetime, timedelta  # Add timedelta import
+from datetime import datetime, timedelta  
 from enum import Enum
-from typing import List  # Add this import
+from typing import List  
 
 class Account(ABC):
     def __init__(self, username, password, hash_password):
@@ -92,18 +92,16 @@ class Address(persistent.Persistent):
                 self.street == other.street and 
                 self.city == other.city)
 
-# Update related routes
 
-# Modify Customer class
 class Customer(Account, persistent.Persistent):
     def __init__(self, username, password, hash_password, name, address, phone_number):
         super().__init__(username, password, hash_password)
         self._name = name
-        self.default_address = address  # renamed from address to default_address
+        self.default_address = address  
         self.phone_number = phone_number
         self.cart = []
         self.orders = []
-        self.saved_addresses = [address]  # renamed from delivery_addresses to saved_addresses
+        self.saved_addresses = [address]  
 
     def add_saved_address(self, address):
         if address not in self.saved_addresses:
@@ -133,8 +131,6 @@ class Customer(Account, persistent.Persistent):
             order.confirm()
         return order
 
-# Modify Order class
-# Move Item class and its subclasses before Order class
 class Item(ABC, persistent.Persistent):
     def __init__(self, name, price, description, photo_url=None):
         self.name = name
@@ -176,12 +172,10 @@ class Order(persistent.Persistent):
         self._calculate_delivery_fee()
     
     def _calculate_delivery_fee(self):
-        # Base delivery fee
         self.delivery_fee = 2.0 
     
     def _calculate_total(self):
         self.total_price = sum(item.price for item in self.items)
-        # Add delivery fee to total after calculating it
         if hasattr(self, 'delivery_fee'):
             self.total_price += self.delivery_fee
         self.distance = 0.0
@@ -198,6 +192,6 @@ class Order(persistent.Persistent):
         if self.status == OrderStatus.PENDING:
             self.status = OrderStatus.PREPARING
             if not self.estimated_delivery_time:
-                self.update_delivery_time(45)  # Set default delivery time to 45 minutes
+                self.update_delivery_time(45) 
             return True
         return False
