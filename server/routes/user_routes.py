@@ -77,7 +77,6 @@ async def customer_dashboard(request: Request, username: str):
     })
 
 
-#get all items in the cart
 @router.get("/{username}/cart")
 async def get_cart_items(request: Request, username: str):
     cart_items = user_service.get_cart_items(username)
@@ -152,17 +151,29 @@ async def confirm_order(username: str, address: AddressBase = None):
 
 
 @router.post("/{username}/password-reset/request")
-async def request_password_reset(username: str):
+async def request_password_reset_route(username: str):
     token = user_service.request_password_reset(username)
     if not token:
         raise HTTPException(status_code=404, detail="User not found")
     return {"reset_token": token}
 
 @router.post("/password-reset/complete")
-async def reset_password(token: str, new_password: str):
-    if not user_service.verify_reset_token_and_update_password(token, new_password):
-        raise HTTPException(status_code=400, detail="Invalid or expired token")
-    return {"message": "Password reset successful"}
+async def complete_password_reset(request: Request):
+    try:
+        data = await request.json()
+        token = data.get("token")
+        new_password = data.get("new_password")
+        
+        if not token or not new_password:
+            raise HTTPException(status_code=400, detail="Token and new password are required")
+        
+        success = user_service.verify_reset_token_and_update_password(token, new_password)
+        if not success:
+            raise HTTPException(status_code=400, detail="Invalid or expired token")
+        
+        return {"message": "Password reset successful"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/{username}/password-reset/verify")
 async def verify_reset_otp(username: str, otp: str):

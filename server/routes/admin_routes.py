@@ -110,6 +110,21 @@ async def get_menu_items(menu_name: str):
         ]
     }
 
+@router.get("/orders")
+async def get_all_orders():
+    orders = admin_service.get_all_orders()
+    return {"orders": orders}
+
+@router.put("/orders/{order_id}/status")
+async def update_order_status(order_id: str, status_update: dict):
+    success = admin_service.update_order_status(
+        order_id, 
+        status_update["status"], 
+        status_update.get("reason", "")
+    )
+    if not success:
+        raise HTTPException(status_code=404, detail="Order not found")
+    return {"message": "Order status updated successfully"}
 
 @router.post("/logout")
 async def logout_admin():

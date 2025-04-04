@@ -6,7 +6,6 @@ import os
 
 router = APIRouter(tags=["auth"])
 
-# Get the project root directory
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 templates = Jinja2Templates(directory=os.path.join(PROJECT_ROOT, "templates"))
 
@@ -25,3 +24,7 @@ async def index(request: Request):
         "request": request,
         "static_path": "/static"
     })
+
+@router.get("/forgot-password", response_class=HTMLResponse)
+async def forgot_password_page(request: Request):
+    return templates.TemplateResponse("forgot_password.html", {"request": request})
