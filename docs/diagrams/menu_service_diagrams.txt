@@ -4,6 +4,8 @@
   ↳ View Menu Items
   ↳ Filter Items by Type
 
+/// //// //// If not needed or Duplicate dont draw seq diagrams
+
 // Sequence Diagram - Menu Viewing (Base Flow)
 User → MenuService: get_menu_by_name(name)
 MenuService → Database: get_menu(name)
@@ -54,3 +56,33 @@ MenuService → User: return only drinks
 | - description: str   |
 | - photo_url: str     |
 +------------------------+
+
+// Menu Service Use Cases
+[User]
+  ↳ Browse Menu
+    <<include>> View All Items
+    <<include>> View Item Details
+    <<include>> Filter Items
+      <<extend>> Filter by Type
+      <<extend>> Filter by Price
+      <<extend>> Filter by Availability
+    <<include>> Search Items
+      <<extend>> Search by Name
+      <<extend>> Search by Category
+
+[Admin]
+  ↳ Manage Menu Items
+    <<include>> Add New Item
+      <<extend>> Add Main Dish
+      <<extend>> Add Side Dish
+      <<extend>> Add Drink
+    <<include>> Update Item
+      <<extend>> Update Price
+      <<extend>> Update Description
+      <<extend>> Update Photo
+      <<extend>> Update Stock
+    <<include>> Remove Item
+    <<include>> Manage Item Availability
+      <<extend>> Schedule Availability
+      <<extend>> Set Out of Stock
+      <<extend>> Disable Item

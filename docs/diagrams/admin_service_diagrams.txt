@@ -1,13 +1,47 @@
 // Use Case Diagram
+// Admin Use Cases
 [Admin]
-  ↳ Login
+  ↳ Manage Account
+    <<include>> Login
+    <<include>> Update Profile
+
   ↳ Manage Customers
-  ↳ View Customer Details
+    <<include>> View Customer List
+    <<include>> View Customer Details
+    <<include>> Search Customers
+    <<extend>> Export Customer Data
+
   ↳ Manage Orders
-  ↳ Update Order Status
-  ↳ Create Menu
-  ↳ Manage Menu Items
-  ↳ View Revenue
+    <<include>> View All Orders
+    <<include>> Update Order Status
+    <<include>> Track Deliveries
+    <<extend>> Cancel Order
+    <<extend>> Process Refund
+    <<extend>> Generate Order Report
+
+  ↳ Manage Menu
+    <<include>> Create Menu
+    <<include>> Update Menu
+    <<include>> Delete Menu
+    <<include>> Manage Menu Items
+      <<extend>> Add Item
+      <<extend>> Update Item
+      <<extend>> Remove Item
+      <<extend>> Schedule Item Availability
+
+  ↳ Manage Inventory
+    <<include>> View Stock Levels
+    <<include>> Update Stock
+    <<include>> Track Stock History
+    <<extend>> Generate Low Stock Alerts
+
+  ↳ View Analytics
+    <<include>> View Revenue Reports
+    <<include>> View Sales Statistics
+    <<include>> Monitor Customer Activity
+    <<extend>> Export Reports
+
+/// //// //// If not needed or Duplicate dont draw
 
 // Sequence Diagram - Admin Authentication
 Admin → AdminService: authenticate_admin(username, password)

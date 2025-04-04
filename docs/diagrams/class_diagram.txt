@@ -1,4 +1,18 @@
-// Class Diagram with Associations
+// Class Diagram with Associations and Enums
+
+// Enums
++-------------------+     +-------------------+     +-------------------+
+|   OrderStatus     |     | DrinkTemperature |     |    ItemType      |
++-------------------+     +-------------------+     +-------------------+
+| PENDING           |     | HOT              |     | MAIN             |
+| PREPARING         |     | COLD             |     | SIDE             |
+| READY             |     |                  |     | DRINK            |
+| DELIVERED         |     |                  |     |                  |
+| CANCELLED         |     |                  |     |                  |
+| COMPLETED         |     |                  |     |                  |
+| DISPUTED          |     |                  |     |                  |
+| REFUNDED          |     |                  |     |                  |
++-------------------+     +-------------------+     +-------------------+
 
 +------------------------+        +------------------------+
 |       Account          |        |       Address         |
@@ -33,7 +47,7 @@
               +-----------+
               | - items   |
               | - address |
-              | - status  |
+              | - status: OrderStatus |
               | - created_at|
               | - total_price|
               | - delivery_fee|
@@ -41,24 +55,26 @@
               +-----------+
                     ↑
                     |
-          +-------------+
-          |    Item     |
-          +-------------+
-          | - name      |
-          | - price     |
-          | - description|
-          | - photo_url |
-          +-------------+
+          +------------------+
+          |      Item        |
+          +------------------+
+          | - name: str      |
+          | - price: float   |
+          | - description: str|
+          | - photo_url: str |
+          | - type: ItemType |
+          +------------------+
                 ↑
                 |
-          +-----+-----+
-          |     |     |
-    +-----+ +-----+ +-------+
-    |Main | |Side | |Drink  |
-    |Dish | |Dish | |      |
-    +-----+ +-----+ +-------+
-    |time | |veg  | |temp   |
-    +-----+ +-----+ +-------+
+    +----------+----------+
+    |          |          |
++----------+ +--------+ +--------+
+| MainDish | |SideDish| | Drink  |
++----------+ +--------+ +--------+
+| - cooking_| | - is_  | | - temp:|
+|   time    | |vegetar-| |  Drink |
+|          | |  ian   | |  Temp  |
++----------+ +--------+ +--------+
 
 // Relationships:
 - Admin "1" --- "*" Customer (manages)
@@ -69,3 +85,6 @@
 - Order "1" --- "1" Address (delivers to)
 - Item <|-- MainDish, SideDish, Drink (inheritance)
 - Account <|-- Admin, Customer (inheritance)
+- Order --- OrderStatus (uses)
+- Drink --- DrinkTemperature (uses)
+- Item --- ItemType (uses)

@@ -1,0 +1,288 @@
+// Menu Management Sequence Diagrams
+
+// Basic Flow - Add Menu Item
+Actor Admin
+Boundary AdminDashboardUI
+Control AdminService
+Control MenuService
+Entity Menu
+Entity Item
+
+Admin -> AdminDashboardUI: selectItemType()
+AdminDashboardUI -> AdminDashboardUI: showTypeSpecificFields()
+Admin -> AdminDashboardUI: fillItemDetails()
+Admin -> AdminDashboardUI: submitItemForm()
+AdminDashboardUI -> AdminService: addMenuItem(menuName, itemData)
+AdminService -> MenuService: validateItemData(itemData)
+MenuService -> Menu: getMenu(menuName)
+Menu -> MenuService: return menu
+MenuService -> Item: createItem(itemData)
+Item -> MenuService: return newItem
+MenuService -> Menu: addItem(newItem)
+Menu -> MenuService: return success
+MenuService -> AdminService: return success
+AdminService -> AdminDashboardUI: return success
+AdminDashboardUI -> Admin: showSuccessMessage()
+
+// Alternative Flow - Update Menu Item
+Admin -> AdminDashboardUI: selectExistingItem()
+AdminDashboardUI -> AdminService: getItemDetails(itemId)
+AdminService -> MenuService: getItem(itemId)
+MenuService -> Menu: findItem(itemId)
+Menu -> MenuService: return item
+MenuService -> AdminService: return itemDetails
+AdminService -> AdminDashboardUI: displayItemForm(itemDetails)
+Admin -> AdminDashboardUI: updateItemDetails()
+AdminDashboardUI -> AdminService: updateMenuItem(itemId, updatedData)
+AdminService -> MenuService: updateItem(itemId, updatedData)
+MenuService -> Menu: updateItem(updatedData)
+Menu -> MenuService: return success
+MenuService -> AdminService: return success
+AdminService -> AdminDashboardUI: showSuccessMessage()
+
+// Exception Flow - Add Menu Item Fails
+Admin -> AdminDashboardUI: submitItemForm()
+AdminDashboardUI -> AdminService: addMenuItem(menuName, itemData)
+AdminService -> MenuService: validateItemData(itemData)
+MenuService -> AdminService: return validationError
+AdminService -> AdminDashboardUI: return error
+AdminDashboardUI -> Admin: showErrorMessage()
+
+// Order Management Sequence Diagrams
+
+// Basic Flow - Create Order
+Actor Customer
+Boundary CartUI
+Control OrderService
+Entity Cart
+Entity Order
+
+Customer -> CartUI: clickCheckout()
+CartUI -> OrderService: createOrder(cartItems)
+OrderService -> Cart: getCartItems()
+Cart -> OrderService: return items
+OrderService -> Order: createNewOrder(items)
+Order -> OrderService: return newOrder
+OrderService -> CartUI: return orderDetails
+CartUI -> Customer: showOrderConfirmation()
+
+// Alternative Flow - Update Order Status
+Actor Admin
+Boundary AdminDashboardUI
+Control OrderService
+Entity Order
+
+Admin -> AdminDashboardUI: selectOrder()
+AdminDashboardUI -> OrderService: getOrderDetails(orderId)
+OrderService -> Order: getOrder(orderId)
+Order -> OrderService: return orderDetails
+OrderService -> AdminDashboardUI: displayOrderDetails()
+Admin -> AdminDashboardUI: updateStatus(newStatus)
+AdminDashboardUI -> OrderService: updateOrderStatus(orderId, newStatus)
+OrderService -> Order: updateStatus(newStatus)
+Order -> OrderService: return success
+OrderService -> AdminDashboardUI: return success
+AdminDashboardUI -> Admin: showSuccessMessage()
+
+// Exception Flow - Order Creation Fails
+Customer -> CartUI: clickCheckout()
+CartUI -> OrderService: createOrder(cartItems)
+OrderService -> Cart: validateItems()
+Cart -> OrderService: return validationError
+OrderService -> CartUI: return error
+CartUI -> Customer: showErrorMessage()
+
+// User Authentication Sequence Diagrams
+
+// Basic Flow - User Login
+Actor User
+Boundary LoginUI
+Control AuthService
+Entity UserAccount
+
+User -> LoginUI: enterCredentials()
+LoginUI -> AuthService: login(username, password)
+AuthService -> UserAccount: findUser(username)
+UserAccount -> AuthService: return userDetails
+AuthService -> AuthService: validatePassword()
+AuthService -> LoginUI: return authToken
+LoginUI -> User: redirectToDashboard()
+
+// Alternative Flow - Password Reset
+User -> LoginUI: clickForgotPassword()
+LoginUI -> AuthService: requestPasswordReset(email)
+AuthService -> UserAccount: findUserByEmail()
+UserAccount -> AuthService: return user
+AuthService -> AuthService: generateResetToken()
+AuthService -> LoginUI: return resetToken
+LoginUI -> User: showResetInstructions()
+
+// Exception Flow - Login Fails
+User -> LoginUI: enterCredentials()
+LoginUI -> AuthService: login(username, password)
+AuthService -> UserAccount: findUser(username)
+UserAccount -> AuthService: return null
+AuthService -> LoginUI: return error
+LoginUI -> User: showLoginError()
+
+// Cart Management Sequence Diagrams
+
+// Basic Flow - Add to Cart
+Actor Customer
+Boundary MenuUI
+Boundary CartUI
+Control CartService
+Entity Cart
+Entity Item
+
+Customer -> MenuUI: selectItem()
+MenuUI -> CartUI: addToCart(itemId)
+CartUI -> CartService: addItem(itemId, quantity)
+CartService -> Item: getItem(itemId)
+Item -> CartService: return itemDetails
+CartService -> Cart: addToCart(item, quantity)
+Cart -> CartService: return updatedCart
+CartService -> CartUI: return success
+CartUI -> Customer: showCartUpdateConfirmation()
+
+// Alternative Flow - Update Cart Quantity
+Customer -> CartUI: updateQuantity(itemId, newQuantity)
+CartUI -> CartService: updateItemQuantity(itemId, newQuantity)
+CartService -> Cart: updateQuantity(itemId, newQuantity)
+Cart -> CartService: return updatedCart
+CartService -> CartUI: refreshCartDisplay()
+CartUI -> Customer: showUpdatedCart()
+
+// Exception Flow - Add to Cart Fails
+Customer -> MenuUI: selectItem()
+MenuUI -> CartUI: addToCart(itemId)
+CartUI -> CartService: addItem(itemId, quantity)
+CartService -> Item: getItem(itemId)
+Item -> CartService: return null
+CartService -> CartUI: return error
+CartUI -> Customer: showItemNotAvailableError()
+
+// Customer Profile Management Sequence Diagrams
+
+// Basic Flow - Update Profile
+Actor Customer
+Boundary ProfileUI
+Control CustomerService
+Entity CustomerProfile
+
+// Admin Menu Management Sequence Diagrams
+
+// Basic Flow - Create New Menu
+Actor Admin
+Boundary AdminDashboardUI
+Control MenuService
+Entity Menu
+
+Admin -> AdminDashboardUI: createNewMenu()
+AdminDashboardUI -> MenuService: createMenu(menuData)
+MenuService -> MenuService: validateMenuData()
+MenuService -> Menu: createMenu()
+Menu -> MenuService: return newMenu
+MenuService -> AdminDashboardUI: return success
+AdminDashboardUI -> Admin: showMenuCreatedSuccess()
+
+// Alternative Flow - Delete Menu
+Admin -> AdminDashboardUI: deleteMenu(menuId)
+AdminDashboardUI -> MenuService: confirmDeletion(menuId)
+MenuService -> Menu: checkActiveOrders()
+Menu -> MenuService: return noActiveOrders
+MenuService -> Menu: deleteMenu()
+Menu -> MenuService: return success
+MenuService -> AdminDashboardUI: refreshMenuList()
+AdminDashboardUI -> Admin: showDeletionSuccess()
+
+// Exception Flow - Menu Creation with Duplicate Name
+Admin -> AdminDashboardUI: createNewMenu()
+AdminDashboardUI -> MenuService: createMenu(menuData)
+MenuService -> Menu: checkExistingName()
+Menu -> MenuService: return nameExists
+MenuService -> AdminDashboardUI: return duplicateError
+AdminDashboardUI -> Admin: showDuplicateNameError()
+
+// Payment Processing Sequence Diagrams
+
+// Basic Flow - Process Payment
+Actor Customer
+Boundary CheckoutUI
+Control PaymentService
+Control OrderService
+Entity Order
+Entity PaymentTransaction
+
+Customer -> CheckoutUI: initiatePayment(orderId)
+CheckoutUI -> PaymentService: processPayment(orderId, paymentDetails)
+PaymentService -> OrderService: getOrderDetails(orderId)
+OrderService -> Order: getOrder(orderId)
+Order -> OrderService: return orderDetails
+OrderService -> PaymentService: return orderTotal
+PaymentService -> PaymentService: validatePaymentDetails()
+PaymentService -> PaymentTransaction: createTransaction()
+PaymentTransaction -> PaymentService: return transactionId
+PaymentService -> OrderService: updateOrderPaymentStatus(orderId, PAID)
+OrderService -> Order: updateStatus()
+Order -> OrderService: return success
+PaymentService -> CheckoutUI: return paymentConfirmation
+CheckoutUI -> Customer: showPaymentSuccess()
+
+// Alternative Flow - Payment Method Selection
+Customer -> CheckoutUI: selectPaymentMethod()
+CheckoutUI -> PaymentService: getAvailablePaymentMethods()
+PaymentService -> CheckoutUI: return paymentMethods
+CheckoutUI -> Customer: displayPaymentOptions()
+Customer -> CheckoutUI: selectMethod(methodId)
+CheckoutUI -> PaymentService: validateMethod(methodId)
+PaymentService -> CheckoutUI: return validationResult
+CheckoutUI -> Customer: showPaymentForm()
+
+// Exception Flow - Payment Failure
+Customer -> CheckoutUI: submitPayment(details)
+CheckoutUI -> PaymentService: processPayment(orderId, details)
+PaymentService -> PaymentService: validatePayment()
+PaymentService -> PaymentTransaction: attemptTransaction()
+PaymentTransaction -> PaymentService: return error
+PaymentService -> CheckoutUI: return paymentError
+CheckoutUI -> Customer: showPaymentFailure()
+
+// Inventory Management Sequence Diagrams
+
+// Basic Flow - Update Stock
+Actor Admin
+Boundary InventoryUI
+Control InventoryService
+Entity Item
+Entity StockTransaction
+
+Admin -> InventoryUI: updateStock(itemId, quantity)
+InventoryUI -> InventoryService: processStockUpdate(itemId, quantity)
+InventoryService -> Item: getCurrentStock(itemId)
+Item -> InventoryService: return currentStock
+InventoryService -> InventoryService: validateStockUpdate()
+InventoryService -> Item: updateStock(quantity)
+Item -> InventoryService: return success
+InventoryService -> StockTransaction: logTransaction()
+StockTransaction -> InventoryService: return transactionId
+InventoryService -> InventoryUI: return updateConfirmation
+InventoryUI -> Admin: showUpdateSuccess()
+
+// Alternative Flow - Low Stock Alert
+System -> InventoryService: checkStockLevels()
+InventoryService -> Item: getAllItems()
+Item -> InventoryService: return items
+InventoryService -> InventoryService: checkLowStockItems()
+InventoryService -> Admin: sendLowStockAlert()
+InventoryService -> InventoryUI: updateStockIndicators()
+InventoryUI -> Admin: showLowStockWarnings()
+
+// Exception Flow - Invalid Stock Update
+Admin -> InventoryUI: updateStock(itemId, -50)
+InventoryUI -> InventoryService: processStockUpdate(itemId, -50)
+InventoryService -> Item: getCurrentStock(itemId)
+Item -> InventoryService: return currentStock
+InventoryService -> InventoryService: validateStockUpdate()
+InventoryService -> InventoryUI: return invalidUpdateError
+InventoryUI -> Admin: showInvalidUpdateError()

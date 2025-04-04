@@ -7,8 +7,13 @@ PREPARING --> READY : food_ready[all_items_prepared]/update_status
 READY --> DELIVERED : delivery_complete[customer_received]/update_status
 PENDING --> CANCELLED : cancel[within_5_min]/refund
 PREPARING --> CANCELLED : cancel[admin_approved]/refund
-DELIVERED --> [*]
+READY --> CANCELLED : cancel[admin_approved]/refund
+DELIVERED --> COMPLETED : confirm_delivery[customer_confirmed]/update_status
+DELIVERED --> DISPUTED : report_issue[delivery_issues]/create_dispute
+DISPUTED --> REFUNDED : approve_refund[admin_approved]/process_refund
+COMPLETED --> [*]
 CANCELLED --> [*]
+REFUNDED --> [*]
 
 // Customer State Chart
 [*] --> GUEST
@@ -18,6 +23,11 @@ AUTHENTICATED --> SHOPPING : view_menu[menu_available]/load_items
 SHOPPING --> CHECKOUT : create_order[cart_not_empty]/calculate_total
 CHECKOUT --> ORDER_PLACED : confirm_order[valid_address]/create_order
 ORDER_PLACED --> AUTHENTICATED : order_complete/clear_cart
+AUTHENTICATED --> PROFILE_MANAGEMENT : edit_profile/load_profile
+PROFILE_MANAGEMENT --> AUTHENTICATED : save_changes[valid_data]/update_profile
+AUTHENTICATED --> ADDRESS_MANAGEMENT : manage_addresses/load_addresses
+ADDRESS_MANAGEMENT --> AUTHENTICATED : save_address[valid_address]/update_addresses
+AUTHENTICATED --> ORDER_HISTORY : view_orders/load_orders
 AUTHENTICATED --> GUEST : logout/clear_session
 
 // Cart State Chart
@@ -25,8 +35,11 @@ AUTHENTICATED --> GUEST : logout/clear_session
 EMPTY --> HAS_ITEMS : add_item[item_available]/update_total
 HAS_ITEMS --> HAS_ITEMS : add_item[item_available]/update_total
 HAS_ITEMS --> HAS_ITEMS : remove_item[item_exists]/update_total
+HAS_ITEMS --> HAS_ITEMS : update_quantity[valid_quantity]/update_total
 HAS_ITEMS --> EMPTY : clear_cart/reset_total
 HAS_ITEMS --> EMPTY : checkout[order_confirmed]/create_order
+HAS_ITEMS --> SAVED : save_cart[user_authenticated]/persist_cart
+SAVED --> HAS_ITEMS : restore_cart[cart_exists]/load_items
 EMPTY --> [*]
 
 // Admin State Chart
@@ -36,6 +49,10 @@ AUTHENTICATED --> MANAGING_ORDERS : view_orders/load_orders
 MANAGING_ORDERS --> MANAGING_ORDERS : update_status[valid_status]/notify_customer
 AUTHENTICATED --> MANAGING_CUSTOMERS : view_customers/load_customers
 MANAGING_CUSTOMERS --> MANAGING_CUSTOMERS : view_details[customer_exists]/load_details
+AUTHENTICATED --> MANAGING_MENUS : manage_menus/load_menus
+MANAGING_MENUS --> MANAGING_ITEMS : edit_menu[menu_selected]/load_items
+MANAGING_ITEMS --> MANAGING_MENUS : save_changes[valid_data]/update_menu
+AUTHENTICATED --> VIEWING_ANALYTICS : view_revenue/load_statistics
 AUTHENTICATED --> UNAUTHENTICATED : logout/clear_session
 
 // Item State Chart
@@ -45,3 +62,16 @@ IN_CART --> AVAILABLE : remove_from_cart/increase_stock
 IN_CART --> ORDERED : confirm_order[valid_order]/update_inventory
 AVAILABLE --> OUT_OF_STOCK : check_stock[stock_zero]/update_status
 OUT_OF_STOCK --> AVAILABLE : restock[stock_added]/update_status
+AVAILABLE --> DISABLED : disable_item[admin_action]/update_status
+DISABLED --> AVAILABLE : enable_item[admin_action]/update_status
+AVAILABLE --> SCHEDULED : schedule_availability[future_date]/set_schedule
+SCHEDULED --> AVAILABLE : time_reached[schedule_active]/update_status
+
+// Menu State Chart
+[*] --> ACTIVE
+ACTIVE --> EDITING : edit_menu[admin_action]/lock_menu
+EDITING --> ACTIVE : save_changes[valid_changes]/update_menu
+ACTIVE --> ARCHIVED : archive_menu[admin_action]/archive_items
+ARCHIVED --> ACTIVE : restore_menu[admin_action]/restore_items
+ACTIVE --> SCHEDULED : schedule_menu[future_date]/set_schedule
+SCHEDULED --> ACTIVE : time_reached[schedule_active]/activate_menu

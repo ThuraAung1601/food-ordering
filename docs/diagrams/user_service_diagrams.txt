@@ -1,13 +1,36 @@
 // Use Case Diagram
+// Customer Use Cases
 [Customer]
-  ↳ Login
-  ↳ Register
-  ↳ Reset Password
-  ↳ Add to Cart
-  ↳ Create Order
-  ↳ Confirm Order
-  ↳ View Orders
-  ↳ Manage Addresses
+  ↳ Manage Account
+    <<include>> Login
+    <<include>> Register
+    <<include>> Reset Password
+    <<include>> Update Profile
+    <<include>> Manage Addresses
+      <<extend>> Add New Address
+      <<extend>> Set Default Address
+      <<extend>> Remove Address
+
+  ↳ Manage Orders
+    <<include>> View Menu
+    <<include>> Add to Cart
+    <<include>> Update Cart
+    <<include>> Create Order
+    <<include>> Track Order
+    <<include>> View Order History
+    <<extend>> Cancel Order
+    <<extend>> Report Delivery Issue
+    <<extend>> Request Refund
+
+  ↳ Manage Cart
+    <<include>> Add Item
+    <<include>> Remove Item
+    <<include>> Update Quantity
+    <<include>> Clear Cart
+    <<extend>> Save Cart
+    <<extend>> Restore Saved Cart
+
+/// //// //// If not needed or Duplicate dont draw
 
 // Sequence Diagram - Password Reset Flow
 Customer → UserService: request_password_reset(username)
