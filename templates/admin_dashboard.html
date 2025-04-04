@@ -3,37 +3,14 @@
 <head>
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="/static/style/css/admin.css">
+    <link rel="stylesheet" href="/static/style/css/customer.css"/>
     <link rel="stylesheet" href="https://pyscript.net/releases/2024.1.1/core.css" />
     <script type="module" src="https://pyscript.net/releases/2024.1.1/core.js"></script>
-    <py-config>
-        [[fetch]]
-        from = "/static/js"
-        files = ["admin_dashboard.py"]
-    </py-config>
 </head>
 <body>
     <section class="pyscript">
         <div id="app"></div>
     </section>
-    
-    <script type="py">
-        from js import document, window, console
-        from pyodide.ffi import create_proxy
-        import asyncio
-        import sys
-        from pathlib import Path
-
-        from admin_dashboard import AdminDashboard
-
-        async def init():
-            try:
-                dashboard = AdminDashboard("app")
-                dashboard.drawWidget()
-            except Exception as e:
-                console.error(f"Error initializing dashboard: {str(e)}")
-
-        # Run the initialization
-        asyncio.ensure_future(init())
-    </script>
+    <script type="py" src="/static/pyscript/admin_dashboard.py"></script>
 </body>
 </html>
