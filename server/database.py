@@ -25,7 +25,9 @@ def initialize_database():
             root.users = BTrees.OOBTree.BTree()
             # Add sample users
             address1 = Address("123", "Pyay", "Yangon")
-            customer1 = Customer('customer1', 'password1', 'hash1', 'John Doe', address1, '555-0101')
+            password = "password1"
+            hash_password = hashlib.sha256(password.encode()).hexdigest()
+            customer1 = Customer('customer1', password, hash_password, 'John Doe', address1, '555-0101')
             root.users[customer1.username] = customer1
             
         # Initialize other collections if needed
@@ -35,8 +37,8 @@ def initialize_database():
             # Store only the hashed password
             hash_password = hashlib.sha256(admin_password.encode()).hexdigest()
             admin = Admin('admin', hash_password, hash_password, 'STAFF001')
-            root.admins[admin.username] = admin
-
+            root.admins[admin.username] = admin  
+    
         # Initialize menus with sample items
         if not hasattr(root, 'menus'):
             root.menus = BTrees.OOBTree.BTree()
@@ -46,29 +48,29 @@ def initialize_database():
             
             # Add main dishes
             burger = MainDish("Chicken Burger", 12.99, "Grilled chicken with fresh vegetables", 20)
-            burger.photo_url = "/static/style/img/burger.png"
+            burger.photo_url = "/static/style/img/main-dish.png"
             burger.add_ingredient("Chicken patty")
             burger.add_ingredient("Lettuce")
             burger.add_ingredient("Tomato")
             
             pizza = MainDish("Pepperoni Pizza", 15.99, "Classic pepperoni pizza with mozzarella", 25)
-            pizza.photo_url = "/static/style/img/pizza.png"
+            pizza.photo_url = "/static/style/img/main-dish.png"
             pizza.add_ingredient("Pepperoni")
             pizza.add_ingredient("Mozzarella")
             
             # Add side dishes
-            fries = SideDish("French Fries", 4.99, "Crispy golden fries", True)
-            fries.photo_url = "/static/style/img/burger.png"
+            fries = SideDish("Chicken nachos", 4.99, "Crispy golden fries", False)
+            fries.photo_url = '/static/style/img/nachos.png'
             
             salad = SideDish("Caesar Salad", 6.99, "Fresh romaine lettuce with caesar dressing", True)
-            salad.photo_url = "/static/style/img/salad.png"
+            salad.photo_url = '/static/style/img/salad.png'
             
             # Add drinks
             cola = Drink("Coca Cola", 2.99, "Ice-cold cola", DrinkTemperature.COLD)
-            cola.photo_url = "/static/style/img/pizza.png"
+            cola.photo_url = '/static/style/img/iced-coffee.png'
             
             coffee = Drink("Latte", 3.99, "Freshly brewed coffee with milk", DrinkTemperature.HOT)
-            coffee.photo_url = "/static/style/img/burger.png"
+            coffee.photo_url = '/static/style/img/coffee-cup.png'
             
             # Add all items to menu
             for item in [burger, pizza, fries, salad, cola, coffee]:
@@ -77,8 +79,9 @@ def initialize_database():
             root.menus[main_menu.name] = main_menu
 
         # Initialize users if not exists
-        if not hasattr(root, 'users'):
-            root.users = BTrees.OOBTree.BTree()
+        # Remove this duplicate initialization
+        # if not hasattr(root, 'users'):
+        #     root.users = BTrees.OOBTree.BTree()
         
         transaction.commit()
         print("Database initialized successfully")
