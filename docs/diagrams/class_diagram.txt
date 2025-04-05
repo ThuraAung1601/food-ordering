@@ -28,17 +28,22 @@
            |                                |
     +-------------+                         |
     |      |      |                        |
-+----------+--+ +-----------+    ♦----------------+
-|   Admin     | | Customer   |----| default_address |  // Changed to composition (♦)
-+-------------+ +-----------+    +-----------------+
-| - staff_id  | | - name    |    | - cart: List   |
-| - menus     | | - phone   |    | - orders: List |
-+-------------+ +-----------+    | - saved_addresses|
++----------+--+ +-----------+        +------------------------+
+|   Admin     | | Customer   |        |       Address         |
++-------------+ +-----------+        +------------------------+
+| - staff_id  | | - name    |        | - number: str         |
+| - menus     | | - phone   |        | - street: str         |
++-------------+ +-----------+        | - city: str           |
+                | - default_address  |        +------------------------+
+                | - saved_addresses  |        | + __str__()           |
+                | - cart: List      |        | + __eq__()            |
+                | - orders: List    |        +------------------------+
 | + auth()    | | + add_to_cart()| 
 | + get_all   | | + clear_cart() |
 | + customers()| | + create_order()|
 | + get_orders()| + confirm_order()|
 +-------------+ | + add_address() |
+                | + add_saved_address() |
                 +-----------+
                      ♦
                      |
@@ -77,20 +82,12 @@
 +----------+ +--------+ +--------+
 
 // Updated Relationships:
-- Admin "1" ◇--- "*" Customer (manages)         // Aggregation
-- Admin "1" ◇--- "*" Order (manages)           // Aggregation
-- Customer "1" ♦--- "*" Order (places)         // Composition
-- Customer "1" ♦--- "*" Address (has)          // Composition
-- Order "1" ◇--- "*" Item (includes)           // Aggregation
-- Order "1" ♦--- "1" Address (delivers to)     // Composition
-- Item <|-- MainDish, SideDish, Drink (inheritance)
-- Account <|-- Admin, Customer (inheritance)
-- Order --- OrderStatus (uses)                 // Association
-- Drink --- DrinkTemperature (uses)           // Association
-- Item --- ItemType (uses)                    // Association
+- Customer "1" ♦--- "1" Address (default_address)  // Composition
+- Customer "1" ◇--- "*" Address (saved_addresses)  // Aggregation
+- Order "1" ◇--- "1" Address (delivery_address)    // Aggregation
 
 Legend:
-♦ Composition (strong relationship)
-◇ Aggregation (weak relationship)
+♦ Composition (strong ownership)
+◇ Aggregation (weak ownership)
 --- Association
 <|-- Inheritance
