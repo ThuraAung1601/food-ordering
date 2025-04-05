@@ -1,73 +1,77 @@
 // Class Diagram with Associations and Enums
 
 // Enums
-+-------------------+     +-------------------+     +-------------------+
-|   OrderStatus     |     | DrinkTemperature |     |    ItemType      |
-+-------------------+     +-------------------+     +-------------------+
-| PENDING           |     | HOT              |     | MAIN             |
-| PREPARING         |     | COLD             |     | SIDE             |
-| READY             |     |                  |     | DRINK            |
-| DELIVERED         |     |                  |     |                  |
-| CANCELLED         |     |                  |     |                  |
-| COMPLETED         |     |                  |     |                  |
-| DISPUTED          |     |                  |     |                  |
-| REFUNDED          |     |                  |     |                  |
-+-------------------+     +-------------------+     +-------------------+
++-------------------+     +-------------------+
+|   OrderStatus     |     | DrinkTemperature |
++-------------------+     +-------------------+
+| PENDING           |     | HOT              |
+| PREPARING         |     | COLD             |
+| READY             |     |                  |
+| DELIVERED         |     |                  |
+| CANCELLED         |     |                  |
++-------------------+     +-------------------+
 
 +------------------------+        +------------------------+
-|       Account          |        |       Address         |
+|       Account (ABC)    |        |       Address         |
 +------------------------+        +------------------------+
-| - username: str       |        | - number: str         |
-| - password: str       |        | - street: str         |
-| - hash_password: str  |        | - city: str           |
+| - _username: str      |        | - number: str         |
+| - _password: str      |        | - street: str         |
+| - _hash_password: str |        | - city: str           |
 +------------------------+        +------------------------+
 | + username()          |        | + __str__()           |
 | + hash_password()     |        | + __eq__()            |
 +------------------------+        +------------------------+
-           ↑                                ↑
-           |                                |
-    +-------------+                         |
-    |      |      |                        |
-+----------+--+ +-----------+        +------------------------+
-|   Admin     | | Customer   |        |       Address         |
-+-------------+ +-----------+        +------------------------+
-| - staff_id  | | - name    |        | - number: str         |
-| - menus     | | - phone   |        | - street: str         |
-+-------------+ +-----------+        | - city: str           |
-                | - default_address  |        +------------------------+
-                | - saved_addresses  |        | + __str__()           |
-                | - cart: List      |        | + __eq__()            |
-                | - orders: List    |        +------------------------+
-| + auth()    | | + add_to_cart()| 
-| + get_all   | | + clear_cart() |
-| + customers()| | + create_order()|
-| + get_orders()| + confirm_order()|
-+-------------+ | + add_address() |
-                | + add_saved_address() |
+           ↑                                
+           |                                
+    +-------------+                         
+    |      |      |                        
++----------+--+ +-----------+    
+|   Admin     | | Customer   |    
++-------------+ +-----------+    
+| - staff_id  | | - _name   |    
+| - menus     | | - phone_number|
++-------------+ +-----------+    
+| + manage_menu()| - default_address: Address|
+| + total_revenue()| - cart: List[Item]|
++-------------+ | - orders: List[Order]|
+                | - saved_addresses: List[Address]|
                 +-----------+
-                     ♦
-                     |
+                | + add_saved_address()|
+                | + add_to_cart()|
+                | + clear_cart()|
+                | + create_order()|
+                | + confirm_order()|
+                +-----------+
+
               +-----------+
               |   Order   |
               +-----------+
-              | - items   |
-              | - address |
-              | - status: OrderStatus |
-              | - created_at|
-              | - total_price|
-              | - delivery_fee|
-              | - distance |
+              | - items: List[Item]|
+              | - delivery_address: Address|
+              | - status: OrderStatus|
+              | - created_at: datetime|
+              | - total_price: float|
+              | - delivery_fee: float|
+              | - distance: float|
+              | - estimated_delivery_time: datetime|
               +-----------+
-                    ↑
-                    |
+              | + _calculate_total()|
+              | + _calculate_delivery_fee()|
+              | + update_delivery_time()|
+              | + update_status()|
+              | + confirm()|
+              +-----------+
+
           +------------------+
-          |      Item        |
+          |    Item (ABC)    |
           +------------------+
           | - name: str      |
           | - price: float   |
           | - description: str|
           | - photo_url: str |
-          | - type: ItemType |
+          | - ingredients: List[str]|
+          +------------------+
+          | + add_ingredient()|
           +------------------+
                 ↑
                 |
@@ -81,10 +85,12 @@
 |          | |  ian   | |  Temp  |
 +----------+ +--------+ +--------+
 
-// Updated Relationships:
+// Relationships:
 - Customer "1" ♦--- "1" Address (default_address)  // Composition
 - Customer "1" ◇--- "*" Address (saved_addresses)  // Aggregation
 - Order "1" ◇--- "1" Address (delivery_address)    // Aggregation
+- Customer "1" ◇--- "*" Order (orders)  // Aggregation
+- Order "1" ◇--- "*" Item (items)  // Aggregation
 
 Legend:
 ♦ Composition (strong ownership)
