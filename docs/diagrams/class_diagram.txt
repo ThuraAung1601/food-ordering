@@ -28,8 +28,8 @@
            |                                |
     +-------------+                         |
     |      |      |                        |
-+----------+--+ +-----------+    +-----------------+
-|   Admin     | | Customer   |----| default_address |
++----------+--+ +-----------+    ♦----------------+
+|   Admin     | | Customer   |----| default_address |  // Changed to composition (♦)
 +-------------+ +-----------+    +-----------------+
 | - staff_id  | | - name    |    | - cart: List   |
 | - menus     | | - phone   |    | - orders: List |
@@ -40,8 +40,8 @@
 | + get_orders()| + confirm_order()|
 +-------------+ | + add_address() |
                 +-----------+
+                     ♦
                      |
-                     ↓
               +-----------+
               |   Order   |
               +-----------+
@@ -76,15 +76,21 @@
 |          | |  ian   | |  Temp  |
 +----------+ +--------+ +--------+
 
-// Relationships:
-- Admin "1" --- "*" Customer (manages)
-- Admin "1" --- "*" Order (manages)
-- Customer "1" --- "*" Order (places)
-- Customer "1" --- "*" Address (has)
-- Order "1" --- "*" Item (includes)
-- Order "1" --- "1" Address (delivers to)
+// Updated Relationships:
+- Admin "1" ◇--- "*" Customer (manages)         // Aggregation
+- Admin "1" ◇--- "*" Order (manages)           // Aggregation
+- Customer "1" ♦--- "*" Order (places)         // Composition
+- Customer "1" ♦--- "*" Address (has)          // Composition
+- Order "1" ◇--- "*" Item (includes)           // Aggregation
+- Order "1" ♦--- "1" Address (delivers to)     // Composition
 - Item <|-- MainDish, SideDish, Drink (inheritance)
 - Account <|-- Admin, Customer (inheritance)
-- Order --- OrderStatus (uses)
-- Drink --- DrinkTemperature (uses)
-- Item --- ItemType (uses)
+- Order --- OrderStatus (uses)                 // Association
+- Drink --- DrinkTemperature (uses)           // Association
+- Item --- ItemType (uses)                    // Association
+
+Legend:
+♦ Composition (strong relationship)
+◇ Aggregation (weak relationship)
+--- Association
+<|-- Inheritance
