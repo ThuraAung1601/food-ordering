@@ -1,9 +1,9 @@
 # food-ordering
 
 ### Tech
-Frontend: HTML, CSS, PyScript
-Backend: FastAPI
-Database: ZODB 
+- Frontend: HTML, CSS, PyScript
+- Backend: FastAPI
+- Database: ZODB 
 
 ### How to run
 Install necessary libraries
